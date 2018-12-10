@@ -74,7 +74,7 @@ const cryptoTrading = () => {
         'Bottom Base': this.bottomBase,
         'Current Price': this.price,
         'Total Yield': `${this.yields}%`,
-        'Trade Counter': `${this.tradeCounter}`,
+        'Trade Counter': this.tradeCounter,
       }
     }
 
@@ -141,41 +141,76 @@ const cryptoTrading = () => {
 
 }
 
-function cycle(task, count = 10) {
-  //console.log(tradeCrypto('DISPLAY'), task)
 
-  for(let i = 0; i < count; i++) {
 
-    if(cryptoTracker.length === 0) { // initialize first buy
-      cryptoTracker.push(tradeCrypto('BUY'));
-    }
-    
-    if(task === 'DECREMENT') {
-      // cryptoTracker.push(tradeCrypto('DECREMENT'));
-      // cryptoTracker.push(tradeCrypto('BUY'));
-      tradeCrypto('DECREMENT');
-      tradeCrypto('BUY')
-    }
-
-    if(task === 'INCREMENT') {
-      let increment = tradeCrypto('INCREMENT');
-
-      // cryptoTracker.push(increment);
-      if(increment['Current Price'] - increment['Bottom Base'] >= 2) tradeCrypto('SELL');//cryptoTracker.push(tradeCrypto('SELL'));
-      // if(increment['Current Price'] - increment['Bottom Base'] >= 4) cryptoTracker.push(tradeCrypto('SELL')); don't want counter to go up when invoke these calls
-      // if(increment['Current Price'] - increment['Bottom Base'] >= 6) cryptoTracker.push(tradeCrypto('SELL')); // might change additional condition so only one sell is called and a multiplier is added to the arg to increase the sell price or rate
-
-      // if(increment.currentPrice - increment.bottomBase >= 10) cryptoTracker.push(tradeCrypto('SELL'));
-    }
-  }
-
-}
 
 function record() {
-  let day = 9000000;
+  let trades = 300;
   let isIncrement = false;
-  let test;
+  //let test; // need to rename to something symatical
+  let cycles = 2;/// might not needs this
+  let tradesPerDay = 3; // need randomize trades per day
+  let tradeCount = 0;
+  let dayCounter = 0 // counts days per a cycle and resets when push or just use modulo if necessary
+  // console.log('here', count)
 
+  function cycle(task, count = 10) {// might places out side of instead of task, might not need day
+    //console.log(tradeCrypto('DISPLAY'), task)
+  
+    for(let i = 0; i < count; i++) {
+  
+      if(cryptoTracker.length === 0) { // initialize first buy
+        let item = tradeCrypto('BUY');
+        week = 'Week'
+        item[week] = 0;
+        cryptoTracker.push(item);
+        tradeCount++;
+      }
+      
+      if(task === 'DECREMENT') {
+        // cryptoTracker.push(tradeCrypto('DECREMENT'));
+        // cryptoTracker.push(tradeCrypto('BUY'));
+        tradeCrypto('DECREMENT');
+        tradeCrypto('BUY')
+        tradeCount++;
+      }
+  
+      if(task === 'INCREMENT') {
+        let increment = tradeCrypto('INCREMENT');
+  
+        // cryptoTracker.push(increment);
+        if(increment['Current Price'] - increment['Bottom Base'] >= 2) tradeCrypto('SELL');//cryptoTracker.push(tradeCrypto('SELL'));
+        // if(increment['Current Price'] - increment['Bottom Base'] >= 4) cryptoTracker.push(tradeCrypto('SELL')); don't want counter to go up when invoke these calls
+        // if(increment['Current Price'] - increment['Bottom Base'] >= 6) cryptoTracker.push(tradeCrypto('SELL')); // might change additional condition so only one sell is called and a multiplier is added to the arg to increase the sell price or rate
+  
+        // if(increment.currentPrice - increment.bottomBase >= 10) cryptoTracker.push(tradeCrypto('SELL'));
+  
+        tradeCount++;
+      }
+  
+      if(tradeCount >= tradesPerDay) {
+        tradeCount = 0;
+        dayCounter++;
+        if(dayCounter % 7 === 0) { // seven needs be more dynamic
+          let item = tradeCrypto('DISPLAY');
+          week = 'Week'
+          item[week] = dayCounter / 7; // need make this more dynamic
+          cryptoTracker.push(item);
+        }
+      }
+
+      // let test = tradeCrypto('DISPLAY');
+      // if(test['Trade Counter'] % day === 0) cryptoTracker.push(test)
+  
+      // testing how this works but I want it to push on buys and sells maybe on increment and decrement and insulficent, or a counter for each of properties
+      // current push is maping days to trades. I need have set trade amount per a day maybe at least 3 to 5 up to 10 could have random amount with 3 most frequent
+      // push on different arrary for increment reaches top trade to messure max yield
+      // organize object data that displays data with more sense when looking at it.
+    }
+  
+  }
+
+  let test;
   do {
     
     if(isIncrement) {
@@ -185,22 +220,23 @@ function record() {
       isIncrement = true
       cycle('DECREMENT');
     }
-    // console.log(cryptoTracker[cryptoTracker.length -1]['Trade Counter'], day);
     test = tradeCrypto('DISPLAY');
     
   }
-  while (test['Trade Counter'] < day);
+  while (test['Trade Counter'] < trades);
   // while (cryptoTracker[ cryptoTracker.length && cryptoTracker.length -1]['Trade Counter'] < day);
 
-  // console.log(cryptoTracker)
+  console.log(cryptoTracker)
   console.log(cryptoTracker[cryptoTracker.length -1])
   console.log(tradeCrypto());
 }
 
+
+//   --  --- Execution of app ---  --   //
+
 const tradeCrypto = cryptoTrading();
 const cryptoTracker = [];
-//console.log(cryptoTracker)
-//console.log(tradeCrypto())
+record();
 
 // need a transaction counter
 // trade counter by sell and buy
@@ -227,10 +263,6 @@ const cryptoTracker = [];
 // implement system buy from capital amount first and then buy from btc balance
 // implement system to hold more doge according to the amount of yeild. maybe every 100% increase doge holdings, and I can figure out what type of algorithm toi implement
 // 52 week high and low, 7 day high and low and other high and low
-
-record();
-
-//console.log(cryptoTracker[cryptoTracker.length - 1], cryptoTracker[cryptoTracker.length - 2])
-
-// console.log(cryptoTracker);
-
+// if have a database record every price movement and trade
+// for testing purposes record every price movement and trade
+// for working iterations record trades base on cycle of days, 1,3,5,7,10,15,30, 365
