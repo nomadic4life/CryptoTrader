@@ -7,7 +7,6 @@ const cryptoTrading = () => {
     totalStartingCapital: 0, //   --  usd // might need to refactor the math
     btcPrice: 3547.65, //  --  btc price, usd, btc-usd
     price: 50, //  --  doge price, btc, doge-btc
-    type: undefined,
     minimumTradeRate: 50000, // btc // 50000 * 2
     investRate: 250000, // btc
     sellRate: 0.5, // 50% is the starting rate, can be changed base on the algoritm. 50% to 100% is the starting range. below 50% will be base on algoritm.
@@ -59,22 +58,23 @@ const cryptoTrading = () => {
       }
       
       return {
-        minimumCapital: `$${this.minimumCapital}`,
-        minimumInvest: cryptoFormat(this.minimumInvest),
-        totalStartingCapital: `$${this.minimumCapital}`,
-        price: cryptoFormat(this.price) + ' BTC',
-        type: type,
-        investRate: cryptoFormat(this.investRate) + ' BTC',
-        sellRate: `${this.sellRate * 100}%`,
-        dogeBalance: cryptoFormat(this.dogeBalance) + ' DOGE',
-        btcBalance: cryptoFormat(this.btcBalance) + ' BTC',
-        totalInvested: cryptoFormat(this.totalInvested) + ' BTC',
-        totalValue: cryptoFormat(this.totalValue) + ' BTC',
-        profitEarnings: cryptoFormat(this.profitEarnings) + ' BTC',
-        bottomBase: this.bottomBase,
-        currentPrice: this.price,
-        yields: `${this.yields}%`,
-        tradeCounter: `${this.tradeCounter}`
+        'Minimum Capital': `$${this.minimumCapital}`,
+        'Minimum Capital BTC': 'in BTC',
+        'Minimum Invest': cryptoFormat(this.minimumInvest),
+        'Total Starting Capital': `$${this.minimumCapital}`,
+        'DOGE Price': cryptoFormat(this.price) + ' BTC',
+        'transaction type': type,
+        'Invest Rate': cryptoFormat(this.investRate) + ' BTC',
+        'Sell Rate': `${this.sellRate * 100}%`,
+        'DOGE Balance': cryptoFormat(this.dogeBalance) + ' DOGE',
+        'BTC Balance': cryptoFormat(this.btcBalance) + ' BTC',
+        'Total Invested': cryptoFormat(this.totalInvested) + ' BTC',
+        'Total Value': cryptoFormat(this.totalValue) + ' BTC',
+        'Profit Earnings': cryptoFormat(this.profitEarnings) + ' BTC',
+        'Bottom Base': this.bottomBase,
+        'Current Price': this.price,
+        'Total Yield': `${this.yields}%`,
+        'Trade Counter': `${this.tradeCounter}`,
       }
     }
 
@@ -119,6 +119,7 @@ const cryptoTrading = () => {
       crypto.btcBalance += Math.round((p * calcTransaction(p - 2, b, c)) / Math.pow(10, 8));
       crypto.totalValue = calcValue(crypto);
       crypto.yields = yields();
+      return 'SELL'
     }
 
   }
@@ -150,17 +151,19 @@ function cycle(task, count = 10) {
     }
     
     if(task === 'DECREMENT') {
-      cryptoTracker.push(tradeCrypto('DECREMENT'));
-      cryptoTracker.push(tradeCrypto('BUY'));
+      // cryptoTracker.push(tradeCrypto('DECREMENT'));
+      // cryptoTracker.push(tradeCrypto('BUY'));
+      tradeCrypto('DECREMENT');
+      tradeCrypto('BUY')
     }
 
     if(task === 'INCREMENT') {
       let increment = tradeCrypto('INCREMENT');
 
-      cryptoTracker.push(increment);
-      if(increment.currentPrice - increment.bottomBase >= 2) cryptoTracker.push(tradeCrypto('SELL'));
-      if(increment.currentPrice - increment.bottomBase >= 4) cryptoTracker.push(tradeCrypto('SELL'));
-      if(increment.currentPrice - increment.bottomBase >= 6) cryptoTracker.push(tradeCrypto('SELL')); // might change additional condition so only one sell is called and a multiplier is added to the arg to increase the sell price or rate
+      // cryptoTracker.push(increment);
+      if(increment['Current Price'] - increment['Bottom Base'] >= 2) tradeCrypto('SELL');//cryptoTracker.push(tradeCrypto('SELL'));
+      // if(increment['Current Price'] - increment['Bottom Base'] >= 4) cryptoTracker.push(tradeCrypto('SELL')); don't want counter to go up when invoke these calls
+      // if(increment['Current Price'] - increment['Bottom Base'] >= 6) cryptoTracker.push(tradeCrypto('SELL')); // might change additional condition so only one sell is called and a multiplier is added to the arg to increase the sell price or rate
 
       // if(increment.currentPrice - increment.bottomBase >= 10) cryptoTracker.push(tradeCrypto('SELL'));
     }
@@ -169,8 +172,9 @@ function cycle(task, count = 10) {
 }
 
 function record() {
-  let day = 380000;
+  let day = 9000000;
   let isIncrement = false;
+  let test;
 
   do {
     
@@ -181,13 +185,23 @@ function record() {
       isIncrement = true
       cycle('DECREMENT');
     }
+    // console.log(cryptoTracker[cryptoTracker.length -1]['Trade Counter'], day);
+    test = tradeCrypto('DISPLAY');
+    
   }
-  while (cryptoTracker[ cryptoTracker.length && cryptoTracker.length -1].tradeCounter < day);
+  while (test['Trade Counter'] < day);
+  // while (cryptoTracker[ cryptoTracker.length && cryptoTracker.length -1]['Trade Counter'] < day);
+
+  // console.log(cryptoTracker)
+  console.log(cryptoTracker[cryptoTracker.length -1])
+  console.log(tradeCrypto());
 }
 
 const tradeCrypto = cryptoTrading();
-console.log(tradeCrypto('SELL'))
 const cryptoTracker = [];
+//console.log(cryptoTracker)
+//console.log(tradeCrypto())
+
 // need a transaction counter
 // trade counter by sell and buy
 // sell amount and buy amount props per each trade
@@ -214,9 +228,9 @@ const cryptoTracker = [];
 // implement system to hold more doge according to the amount of yeild. maybe every 100% increase doge holdings, and I can figure out what type of algorithm toi implement
 // 52 week high and low, 7 day high and low and other high and low
 
-// record();
+record();
 
-// console.log(cryptoTracker[cryptoTracker.length - 1], cryptoTracker[cryptoTracker.length - 2])
+//console.log(cryptoTracker[cryptoTracker.length - 1], cryptoTracker[cryptoTracker.length - 2])
 
 // console.log(cryptoTracker);
 
