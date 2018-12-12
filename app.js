@@ -4,11 +4,11 @@ const cryptoTrading = () => {
   const crypto = {
 
     minimumCapital: 0,
-    recurringCapital: 0,
-    btcBalanceCapital: 0,
+    startingCapital: 0,
 
-    minimumInvest: 0,
-    totalStartingCapital: 0,
+    usdCapitalBalance: 0,
+    btcBalanceCapital: 0,
+    recurringCapital: 0,
 
     btcPrice: 3547.65,
     price: 50,
@@ -24,12 +24,13 @@ const cryptoTrading = () => {
     totalInvested: 0,
     totalValue: 0,
 
+    totalYield: 0,
     usdValue: 0,
     profitEarnings: 0,
-    bottomBase: 50,
-    yields: 0,
 
+    bottomBase: 50,
     tradeCounter: 0,
+    //add date to track date
 
     calcMinCapital: function() {
 
@@ -89,7 +90,110 @@ const cryptoTrading = () => {
         'Total Yield': `${this.yields}%`,
         'Trade Counter': this.tradeCounter,
       }
-    }
+    },
+
+    calcValue: function({ price : p, dogeBalance : b, btcBalance : b } = this ) {
+      this.totalValue = Math.round( p * d / Math.pow(10, 8) + b );
+    },
+
+    // need to varify if working correctly
+    pne: function({ totalInvested : i } = this ) {
+      // need to test if this is correct
+      this.profitEarnings = Math.round(this.calcValue() - i)
+      return Math.round(this.calcValue() - i);
+    },
+
+     // need to varify if working correctly
+    calcYield: function({ totalInvested : i } = this) {
+      // need to test if this is correct
+      if(!this.pne()) this.totalYield = 0;
+      this.totalYield = Math.round(this.pne() / i * 10000) / 100;
+    },
+
+     // need to varify if working correctly
+    calcTransaction: function( isBuy = true, { price : p, minimumTradeRate : t, sellRate : s, tradeMultiplier : m } = this) {
+      let r;
+      if(isBuy) r = t * m;
+      else r = s * (t * m);
+      return Math.round((1 / p) * Math.pow(10, 8) * r);
+    },
+
+     // need to varify if working correctly
+    buy: function({ 
+      dogeBalance : d, 
+      totalInvested : f, 
+      price : p, 
+      tradeMultiplier : m,
+      minimumTradeRate : b, 
+      btcBalance : e,
+      btcBalanceCapital : j,
+      feeRate : x, 
+      } = this ) {
+
+        let buyy = this.calcTransaction();
+
+        this.tradeCounter++;
+  
+        if(this.btcBalanceCapital > this.minimumTradeRate) {
+
+          // remove from btc capital balance
+          this.btcBalanceCapital = j - ((b * m * x) + (b * m)); 
+
+          // add to doge balance
+          this.dogeBalance = d + buyy;
+          
+          // add to total invested
+          this.totalInvested = f + (b * m);
+
+          // update last buy price
+          this.bottomBase = p;
+
+          return 'BUY';
+        
+        } else if(e > (b * m)) {
+
+          // remove from btc capital balance
+          this.btcBalance = e - ((b * m * x) + (b * m));
+
+          // add to doge balance
+          this.dogeBalance = d + buyy;
+
+          // update last buy price
+          this.bottomBase = p;
+
+          return 'BUY';
+
+        } else return 'INSUFFICIENT';
+    },
+
+     // need to varify if working correctly
+    sell: function({ 
+      dogeBalance : d,
+      btcBalance : e, 
+      price : p, 
+      minimumTradeRate : b, 
+      sellRate : c,
+      feeRate : f,
+      tradeMultiplier : m,
+      } = this ) {
+
+        let sells = this.calcTransaction(false)
+
+        this.tradeCounter++;
+
+        if(d < sells + (p * sells * f)) return 'INSUFFICIENT';
+
+        // used for debugging 
+        console.log(d - sells); 
+
+        // remove from doge balance
+        this.dogeBalance = d - sells;
+
+        // add to btc balance
+        this.btcBalance += Math.round((p * sells - (p * sells * f)) / Math.pow(10, 8));
+
+        return 'SELL'
+    },
 
   }
 
@@ -183,11 +287,14 @@ const cryptoTrading = () => {
 
     if( action === 'INCREMENT' ) crypto.price++
     if( action === 'DECREMENT' ) crypto.price--;
-    if( action === 'BUY' ) buy(crypto);
-    if( action === 'SELL' ) action = sell(crypto);
+    if( action === 'BUY' ) crypto.buy();
+    if( action === 'SELL' ) action = crypto.sell();
 
-    crypto.totalValue = calcValue(crypto);
-    crypto.yields = yields();
+    // update total value
+    crypto.calcValue();
+
+    // update total yield
+    crypto.calcYield();
 
     return crypto.format( action );
   }
@@ -277,7 +384,7 @@ function record() {
   while (cryptoTracker[cryptoTracker.length -1]['Trade Counter']  < trades );
 
 
-  console.log(cryptoTracker)
+  // console.log(cryptoTracker)
   //console.log(tradeCrypto());
 }
 
