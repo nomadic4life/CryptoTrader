@@ -32,6 +32,10 @@ const cryptoTrading = () => {
     tradeCounter: 0,
     //add date to track date
 
+    initialize: function() {
+
+    },
+
     calcMinCapital: function() {
 
       // this function calculates the minimum capital needed to invested into doge according to the price of doge/btc and btc/usd and factor those numbers with the minimum trade rate for doge, includes the fee rate for both coinbase and trade for exchange rate, includes premimum markup rate for buying btc on coinbase.
@@ -50,6 +54,7 @@ const cryptoTrading = () => {
       this.btcBalanceCapital = counter;
     },
 
+    // need to refacter format object being returned
     format: function(type  = 'DISPLAY') {
 
       function cryptoFormat(num) {
@@ -70,52 +75,60 @@ const cryptoTrading = () => {
       }
       
       return {
-        'Minimum Capital': `$${this.minimumCapital}`,
-        // 'Minimum Capital BTC': 'in BTC',
-        'BTC balance Capital': cryptoFormat(this.btcBalanceCapital),
-        // 'Total Starting Capital': `$${this.minimumCapital}`,
-        'BTC Price': this.btcPrice,
-        'DOGE Price': cryptoFormat(this.price) + ' BTC',
         'transaction type': type,
-        // //'Invest Rate': cryptoFormat(this.investRate) + ' BTC',
-        // 'Sell Rate': `${this.sellRate * 100}%`,
+        'Minimum Capital': `$${this.minimumCapital}`,
+        'Starting Capital': `$${this.startingCapital}`,
+        
+        'USD Capital Balance': `$${this.usdCapitalBalance}`,
+        'BTC balance Capital': cryptoFormat(this.btcBalanceCapital),
+        'Recurring Capital': cryptoFormat(this.recurringCapital),
+
+        'BTC Price': `$${this.btcPrice}`,
+        'DOGE Price': cryptoFormat(this.price) + ' BTC',
+
+        'Minimum Trade Rate': `${this. minimumTradeRate}`,
+        'Trade Multiplier': `${this.tradeMultiplier}`,
+        'Amount Traded': `${this. minimumTradeRate * this.tradeMultiplier}`,
+        'Fee Rate': `${this.feeRate * 100}%`,
+        'Sell Rate': `${this.sellRate * 100}%`,
+
         'DOGE Balance': cryptoFormat(this.dogeBalance) + ' DOGE',
         'BTC Balance': cryptoFormat(this.btcBalance) + ' BTC',
+
         'Total Invested': cryptoFormat(this.totalInvested) + ' BTC',
         'Total Value': cryptoFormat(this.totalValue) + ' BTC',
-        'Profit Earnings': cryptoFormat(this.profitEarnings) + ' BTC',
+
+        'Total Yield': `${this.totalYield}%`,
         'USD valueation': Math.round(this.btcPrice * this.totalValue/1000000)/100, // need some logic to get value in USD
-        'Bottom Base': this.bottomBase,
+        'Profit Earnings': cryptoFormat(this.profitEarnings) + ' BTC',
         'Current Price': this.price,
-        'Total Yield': `${this.yields}%`,
+        'Bottom Base': this.bottomBase,
         'Trade Counter': this.tradeCounter,
-      }
+      };
     },
 
-    calcValue: function({ price : p, dogeBalance : b, btcBalance : b } = this ) {
-      this.totalValue = Math.round( p * d / Math.pow(10, 8) + b );
+    calcValue: function({ price : p, dogeBalance : d, btcBalance : b } = this ) {
+      return this.totalValue = Math.round( p * d / Math.pow(10, 8) + b );
     },
 
-    // need to varify if working correctly
     pne: function({ totalInvested : i } = this ) {
-      // need to test if this is correct
-      this.profitEarnings = Math.round(this.calcValue() - i)
-      return Math.round(this.calcValue() - i);
+      return this.profitEarnings = Math.round(this.calcValue() - i)
     },
 
-     // need to varify if working correctly
     calcYield: function({ totalInvested : i } = this) {
-      // need to test if this is correct
       if(!this.pne()) this.totalYield = 0;
       this.totalYield = Math.round(this.pne() / i * 10000) / 100;
     },
 
      // need to varify if working correctly
     calcTransaction: function( isBuy = true, { price : p, minimumTradeRate : t, sellRate : s, tradeMultiplier : m } = this) {
-      let r;
-      if(isBuy) r = t * m;
-      else r = s * (t * m);
-      return Math.round((1 / p) * Math.pow(10, 8) * r);
+      let a;
+      if(isBuy) a = t * m;
+      else {
+        a = s * (t * m)
+        p = p - 2
+      };
+      return Math.round((1 / p) * Math.pow(10, 8) * a);
     },
 
      // need to varify if working correctly
@@ -197,97 +210,13 @@ const cryptoTrading = () => {
 
   }
 
-  { // Grouping of functions
-  
-    function calcValue( {price : a, dogeBalance : b, btcBalance : c}) {
-      return Math.round( a * b / Math.pow(10, 8) + c );
-    }
-
-    function pne( { totalInvested : b } ) {
-      crypto.profitEarnings = Math.round(calcValue(crypto) - b)
-      return Math.round(calcValue(crypto) - b);
-    }
-
-    function yields() {
-      if(!pne(crypto)) return 0;
-      return Math.round(pne(crypto) / crypto.totalInvested * 10000) / 100;
-    }
-
-    function calcTransaction( a, b, c = 1) {
-      return Math.round((1 / a) * Math.pow(10, 8) * b * c);
-    }
-
-    function buy({ 
-      dogeBalance : d, 
-      totalInvested : f, 
-      sellRate : c, 
-      price : p, 
-      tradeMultiplier : m,
-      minimumTradeRate : b, 
-      btcBalance : e,
-      btcBalanceCapital : j,
-      feeRate : x, 
-      }) {
-
-      crypto.tradeCounter++;
-
-      //b = b * m;
-
-      if(crypto.btcBalanceCapital > crypto.minimumTradeRate) {
-        //d = d + calcTransaction(p, (b * m));
-        //console.log(j - ((b * m * x) + (b * m)), ((b * m * x) + (b * m)))
-        crypto.btcBalanceCapital = j - ((b * m * x) + (b * m)); // remove from btc capital balance
-        crypto.dogeBalance = d + calcTransaction(p, (b * m)); // add to doge balance
-        crypto.totalInvested = f + (b * m);
-
-        //crypto.btcBalance = e > b ? e - b : e;
-        //crypto.totalInvested = e > b ? f : f + b;
-      
-      } else if(e > (b * m)) {
-        crypto.btcBalance = e - ((b * m * x) + (b * m));
-        crypto.dogeBalance = d + calcTransaction(p, (b * m));
-        //crypto.totalInvested = f;
-      }
-
-      crypto.totalValue = calcValue(crypto);
-      crypto.yields = yields();
-      crypto.bottomBase = p;
-      
-    }
-
-    function sell({ 
-      dogeBalance : d,
-      btcBalance : e, 
-      price : p, 
-      minimumTradeRate : b, 
-      sellRate : c,
-      feeRate : f,
-      tradeMultiplier : m,
-    }) {
-
-      crypto.tradeCounter++;
-      //console.log('entering here to sell but not selling',d,calcTransaction(p - 2, (b * m), c),calcTransaction(p - 2, b, c))
-      if(d < calcTransaction(p - 2, b, c) + (p * calcTransaction(p - 2, b, c) * f)) return 'INSUFFICIENT';
-      
-      
-      //d = d - calcTransaction(p - 2, b, c);
-      console.log(d - calcTransaction(p - 2, b, c)); // debugging
-      crypto.dogeBalance = d - calcTransaction(p - 2, b, c);
-      crypto.btcBalance += Math.round((p * calcTransaction(p - 2, b, c) - (p * calcTransaction(p - 2, b, c) * f)) / Math.pow(10, 8));
-      crypto.totalValue = calcValue(crypto);
-      crypto.yields = yields();
-      return 'SELL'
-    }
-
-  }
-
   crypto.calcMinCapital()
 
   return action => {
 
     if( action === 'INCREMENT' ) crypto.price++
     if( action === 'DECREMENT' ) crypto.price--;
-    if( action === 'BUY' ) crypto.buy();
+    if( action === 'BUY' ) action = crypto.buy();
     if( action === 'SELL' ) action = crypto.sell();
 
     // update total value
@@ -306,7 +235,7 @@ const cryptoTrading = () => {
 
 function record() {
 
-  let trades = 100;
+  let trades = 10;
   let isIncrement = false;
   let tradesPerDay = 3; // need randomize trades per day
   let tradeCounter = 0;
@@ -349,7 +278,7 @@ function record() {
       if(tradeCounter >= tradesPerDay) {
         tradeCounter = 0;
         dayCounter++;
-        if(dayCounter % 30 === 0) { // seven needs be more dynamic
+        if(dayCounter % 7 === 0) { // seven needs be more dynamic
           let item = tradeCrypto('DISPLAY');
           week = 'Week'
           item[week] = dayCounter / 7; // need make this more dynamic
