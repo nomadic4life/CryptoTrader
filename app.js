@@ -3,27 +3,26 @@ const cryptoTrading = () => {
 
   const crypto = {
 
-    minimumCapital: 0, //  --  usd // might need to refactor the math
-    recurringCapital: 0, // --  usd // new added capital base on monthly rate
-    btcBalanceCapital: 0, // --  btc // capital used in calculation for buying and selling. calculate first, then calculate btc balance.
+    minimumCapital: 0,
+    recurringCapital: 0,
+    btcBalanceCapital: 0,
 
-    minimumInvest: 0, // might not need
-    totalStartingCapital: 0, //   --  usd // might need to refactor the math
+    minimumInvest: 0,
+    totalStartingCapital: 0,
 
-    btcPrice: 3547.65, //  --  btc price, usd, btc-usd
-    price: 50, //  --  doge price, btc, doge-btc
+    btcPrice: 3547.65,
+    price: 50,
 
     minimumTradeRate: 50000,
-    tradeMultiplier: 2, // starting at 2, can increase base on total capital and PNE and other factors with in an algorithm
-    sellRate: 0.5, // 50% is the starting rate, can be changed base on the algoritm. 50% to 100% is the starting range. below 50% will be base on algoritm.
+    tradeMultiplier: 2,
+    sellRate: 0.5,
     feeRate: 0.002,
-    //investRate: 250000, // btc
 
     dogeBalance: 0,
     btcBalance: 0,
 
     totalInvested: 0,
-    totalValue: 0, // bug on total value // valuation seems to be working but need more checking
+    totalValue: 0,
 
     usdValue: 0,
     profitEarnings: 0,
