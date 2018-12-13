@@ -3,7 +3,7 @@ const cryptoTrading = () => {
 
   const crypto = {
 
-    minimumCapital: 0,
+    minimumCapital: null,
     startingCapital: 0,
 
     usdCapitalBalance: 0,
@@ -32,8 +32,38 @@ const cryptoTrading = () => {
     tradeCounter: 0,
     //add date to track date
 
-    initialize: function() {
+    initialize: function({price, btcPrice, startingCapital, recurringCapital = 0, updateRate, period, tradeLimit, randomize = false,}) {
+      this.price = price;
+      this.btcPrice = btcPrice;
+      this.calcMinCapital();
+      this.startingCapital = startingCapital;
+      this.usdCapitalBalance = startingCapital;
+      this.btcBalanceCapital = Math.round(1 / btcPrice * startingCapital * Math.pow(10, 8));
+      this.recurringCapital = recurringCapital || this.btcBalanceCapital;
+      this.totalYield = 0;
+      this.tradeLimit = tradeLimit;
+      this.updateRate = updateRate;
+      this.randomize = randomize;
+      this.period = period;
 
+      // not for debugging
+      console.log(this.format())
+      
+    },
+
+    updateProcess: function() {
+      return {
+        trades: this.tradeLimit,
+        update: this.updateRate,
+        randomize: this.randomize,
+      }
+    },
+
+    // will work on when I solve initaliztion
+    updateDepositCapital: function() {
+      console.log('here in deposit')
+      this.btcBalanceCapital += this.recurringCapital;
+      this.usdCalcBalance();
     },
 
     calcMinCapital: function() {
@@ -51,6 +81,8 @@ const cryptoTrading = () => {
       total = Math.round(((total * coinbaseFee) + total)/1000000)/100;
 
       this.minimumCapital = total;
+      this.startingCapital = total;
+      this.usdCapitalBalance = total;
       this.btcBalanceCapital = counter;
     },
 
@@ -73,7 +105,7 @@ const cryptoTrading = () => {
           ? '0.' + '0'.repeat(8 - num.length) + num 
           : `${num.slice(0,-8)}.${num.slice(-8)}`;
       }
-      
+
       return {
         'transaction type': type,
         'Minimum Capital': `$${this.minimumCapital}`,
@@ -86,23 +118,25 @@ const cryptoTrading = () => {
         'BTC Price': `$${this.btcPrice}`,
         'DOGE Price': cryptoFormat(this.price) + ' BTC',
 
-        'Minimum Trade Rate': `${this. minimumTradeRate}`,
-        'Trade Multiplier': `${this.tradeMultiplier}`,
-        'Amount Traded': `${this. minimumTradeRate * this.tradeMultiplier}`,
-        'Fee Rate': `${this.feeRate * 100}%`,
-        'Sell Rate': `${this.sellRate * 100}%`,
+        // 'Minimum Trade Rate': `${this. minimumTradeRate}`,
+        // 'Trade Multiplier': `${this.tradeMultiplier}`,
+        // 'Amount Traded': `${this. minimumTradeRate * this.tradeMultiplier}`,
+        // 'Fee Rate': `${this.feeRate * 100}%`,
+        // 'Sell Rate': `${this.sellRate * 100}%`,
 
         'DOGE Balance': cryptoFormat(this.dogeBalance) + ' DOGE',
         'BTC Balance': cryptoFormat(this.btcBalance) + ' BTC',
 
         'Total Invested': cryptoFormat(this.totalInvested) + ' BTC',
         'Total Value': cryptoFormat(this.totalValue) + ' BTC',
-
+        
+        'Profit Earnings': cryptoFormat(this.profitEarnings) + ' BTC',
+        // 'Rate of update by days': this.updateRate,
         'Total Yield': `${this.totalYield}%`,
         'USD valueation': Math.round(this.btcPrice * this.totalValue/1000000)/100, // need some logic to get value in USD
-        'Profit Earnings': cryptoFormat(this.profitEarnings) + ' BTC',
         'Current Price': this.price,
         'Bottom Base': this.bottomBase,
+
         'Trade Counter': this.tradeCounter,
       };
     },
@@ -131,6 +165,10 @@ const cryptoTrading = () => {
       return Math.round((1 / p) * Math.pow(10, 8) * a);
     },
 
+    usdCalcBalance() {
+      this.usdCapitalBalance = Math.round(this.btcBalanceCapital * this.btcPrice / 1000000) / 100;
+    },
+
      // need to varify if working correctly
     buy: function({ 
       dogeBalance : d, 
@@ -147,7 +185,7 @@ const cryptoTrading = () => {
 
         this.tradeCounter++;
   
-        if(this.btcBalanceCapital > this.minimumTradeRate) {
+        if(j > b * m) {
 
           // remove from btc capital balance
           this.btcBalanceCapital = j - ((b * m * x) + (b * m)); 
@@ -161,6 +199,8 @@ const cryptoTrading = () => {
           // update last buy price
           this.bottomBase = p;
 
+          this.usdCalcBalance();
+
           return 'BUY';
         
         } else if(e > (b * m)) {
@@ -173,6 +213,8 @@ const cryptoTrading = () => {
 
           // update last buy price
           this.bottomBase = p;
+
+          this.usdCalcBalance();
 
           return 'BUY';
 
@@ -197,7 +239,7 @@ const cryptoTrading = () => {
         if(d < sells + (p * sells * f)) return 'INSUFFICIENT';
 
         // used for debugging 
-        console.log(d - sells); 
+        // console.log(d - sells); 
 
         // remove from doge balance
         this.dogeBalance = d - sells;
@@ -210,10 +252,11 @@ const cryptoTrading = () => {
 
   }
 
-  crypto.calcMinCapital()
+  return (action, init) => {
 
-  return action => {
-
+    if( action === 'INIT' ) return crypto.initialize(init);
+    if( action === 'UPDATE' ) return crypto.updateProcess()
+    if( action === 'DEPOSIT' ) return crypto.updateDepositCapital();
     if( action === 'INCREMENT' ) crypto.price++
     if( action === 'DECREMENT' ) crypto.price--;
     if( action === 'BUY' ) action = crypto.buy();
@@ -231,27 +274,30 @@ const cryptoTrading = () => {
 }
 
 
-
-
 function record() {
 
-  let trades = 10;
+  const { trades, update, randomize} = tradeCrypto('UPDATE');
+  let index = [1,3,5,7,15,30,365].findIndex( index => index === update)
   let isIncrement = false;
-  let tradesPerDay = 3; // need randomize trades per day
+  let tradesPerDay = 3;
+  let count = 10;
+  let term = ['daily term', '3 day term', '5 day term', 'weekly term', '15 day term', '30 day term', 'Annually Term' ][index];
   let tradeCounter = 0;
-  let dayCounter = 0 // counts days per a cycle and resets when push or just use modulo if necessary
+  let dayCounter = 0;
+  //let period = 'week';
 
-  function cycle(task, count = 10) {// might places out side of instead of task
+  function cycle(task) {// might places out side of instead of task
   
     for(let i = 0; i < count; i++) {
   
       if(cryptoTracker.length === 0) { // initialize first buy
         let item = tradeCrypto('BUY');
-        week = 'Week'
-        item[week] = 0;
+        item[term] = 0;
         cryptoTracker.push(item);
         tradeCounter++;
-        console.log(tradeCrypto()); // for testing and debugging
+
+        // for testing and debugging
+        // console.log(tradeCrypto()); 
       }
       
       if(task === 'DECREMENT') {
@@ -276,17 +322,21 @@ function record() {
       }
   
       if(tradeCounter >= tradesPerDay) {
+
         tradeCounter = 0;
         dayCounter++;
-        if(dayCounter % 7 === 0) { // seven needs be more dynamic
+        dayCounter % 30 === 0 ? tradeCrypto('DEPOSIT') : null;
+
+        if(dayCounter % update === 0) { 
+
           let item = tradeCrypto('DISPLAY');
-          week = 'Week'
-          item[week] = dayCounter / 7; // need make this more dynamic
+          item[term] = dayCounter / update;
           cryptoTracker.push(item);
         }
       }
 
-      console.log(tradeCrypto()); // for testing and debugging
+      // for testing and debugging
+      // console.log(tradeCrypto()); 
   
       // testing how this works but I want it to push on buys and sells maybe on increment and decrement and insulficent, or a counter for each of properties
       // current push is maping days to trades. I need have set trade amount per a day maybe at least 3 to 5 up to 10 could have random amount with 3 most frequent
@@ -296,25 +346,23 @@ function record() {
   
   }
 
-  // let test;
   do {
-    
-    if(isIncrement) {
-      isIncrement = false
+    isIncrement = !isIncrement
+    randomize ? tradesPerDay = doRandom('DAY') : tradesPerDay;
+    randomize ? count = doRandom('COUNT') : count;
+
+    if(isIncrement) { 
       cycle('INCREMENT');
     } else {
-      isIncrement = true
       cycle('DECREMENT');
     }
-
-    // test = tradeCrypto('DISPLAY');
     
   }
   while (cryptoTracker[cryptoTracker.length -1]['Trade Counter']  < trades );
 
 
-  // console.log(cryptoTracker)
-  //console.log(tradeCrypto());
+  console.log(cryptoTracker)
+  console.log(tradeCrypto());
 }
 
 
@@ -324,6 +372,11 @@ function record() {
 
 const tradeCrypto = cryptoTrading();
 const cryptoTracker = [];
+
+// tradeLimit: provides the max number of trades, updateRate: provides when to push base on how many days pass, 1,3,5,7,10,15,30, 365 days
+tradeCrypto('INIT', {price: 50, btcPrice: 3340, startingCapital: 1000, tradeLimit: 1000, updateRate: 30, randomize: false});
+console.log(tradeCrypto('UPDATE'));
+
 record();
 
 
