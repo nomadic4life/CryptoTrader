@@ -5,7 +5,7 @@ import './App.css';
 class App extends Component {
 
   state = {
-    dogePrice: null,
+    dogePrice: '',
     btcPrice: null,
     dogeQuantity: null,
     amount: null,  // doge
@@ -17,8 +17,9 @@ class App extends Component {
 
   handleOnSubmit = ({dogePrice, dogeAmount, btcSum}) => {
     console.log(dogePrice, dogeAmount, btcSum)
+
     this.setState({
-      price: dogePrice * Math.pow( 10, 8),
+      price: dogePrice,
     })
   }
 
@@ -31,7 +32,7 @@ class App extends Component {
           handleOnSubmit = {this.handleOnSubmit} 
         />
 
-        <h1>{this.state.dogePrice / Math.pow(10,8)}</h1>
+        <h1>{String(this.state.price)}</h1>
 
       </div>
     );
