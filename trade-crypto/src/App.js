@@ -5,23 +5,34 @@ import './App.css';
 class App extends Component {
 
   state = {
-    dogePrice: '',
+    dogePrice: null,
+    btcPrice: null,
+    dogeQuantity: null,
+    amount: null,  // doge
+    price: null,  // btc
+    sum: null,  // btc
+    fee: null,  // btc
+    total: null,  // btc
   }
 
-  handleOnSubmit = ({dogePrice}) => {
-    console.log(dogePrice)
+  handleOnSubmit = ({dogePrice, dogeAmount, btcSum}) => {
+    console.log(dogePrice, dogeAmount, btcSum)
     this.setState({
-      dogePrice: dogePrice
+      price: dogePrice * Math.pow( 10, 8),
     })
   }
 
   render() {
+
     return (
       <div className="App">
+
         <Form 
           handleOnSubmit = {this.handleOnSubmit} 
         />
-        <h1>{this.state.dogePrice}</h1>
+
+        <h1>{this.state.dogePrice / Math.pow(10,8)}</h1>
+
       </div>
     );
   }
