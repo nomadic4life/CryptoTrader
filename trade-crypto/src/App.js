@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import Form from './Components/Form'
-import { toCryptoString, toCryptoValue } from './Components/CryptoHandler'
 import './App.css';
 
-String.prototype.toCryptoValue = toCryptoValue;
-Number.prototype.toCryptoValue = toCryptoString;
+
 
 // needed Inputs
 // btc price
@@ -43,65 +41,85 @@ class App extends Component {
       btcTotalValueBalance: 0, // btc capital source + btc balance total
       usdTotalValueBalance: 0, // btc capital source + btc balance total in usde value
     },
-    price: {
-      dogePrice: 0, // doge-btc
-      btcPrice: 0, // btc-usd
-    },
+    // price: {
+    //   dogePrice: 0, // doge-btc
+    //   btcPrice: 0, // btc-usd
+    // },
+    // amount: {
+    //   btcAmount: 0,
+    //   dogeAmount: 0,
+    // },
+    // quantity: {
+    //   btcQuantity: 0,
+    //   dogeQuantity: 0,
+    // },
+    // fee: {
+    //   buyBTC: 0.01,
+    //   buyDOGE: 0.002,
+    // },
     dogePrice: '',
     btcPrice: null,
     dogeQuantity: null,
-    amount: '', // doge
-    price: '',  // btc
-    sum: '',  // btc
+    quantity: '', // doge
+    price: 0,  // btc
+    amount: '',  // btc
     fee: null,  // btc
     total: null,  // btc
   }
 
-  handleOnSubmit = ({dogePrice, dogeAmount, btcSum}) => {
-    const crypto = [dogePrice, dogeAmount, btcSum]
-    const cryptoFormatting = num => {
-      return num.split('.').length > 1 ? num + '0'.repeat(8 - num.split('.')[1].length) : num + '.00000000';
-    }
-
-    const cryptoValue = num => {
-      return num.split('.').join('') * Math.pow(10,8);
-    }
-
-    for(let i = 0; i < crypto.length; i++) {
-      console.log(cryptoValue(crypto[i]));
-    }
-
-    let value = crypto.map(num => cryptoValue(num));
-
-    console.log(this.cryptoFormat(value[1]));
-    
+  handleOnSubmit = ({dogePrice, dogeQuantity, btcAmount}) => {
+    const crypto = [dogePrice, dogeQuantity, btcAmount];   
 
     this.setState({
-      price:  value[0],
-      amount: value[1],
-      sum: value[2],
+      price:  this.toCryptoValue(dogePrice),
+      quantity: this.toCryptoValue(dogeQuantity),
+      amount: this.toCryptoValue(btcAmount),
     });
 
   }
 
-  cryptoFormat = num => {
+  toCryptoValue = (stringNum) => {
 
-    if(num < 0) {
+    const cryptoFormatting = num => {
+      return num.split('.').length > 1 ? num + '0'.repeat(8 - num.split('.')[1].length) : num + '.00000000';
+    };
+  
+    if(typeof stringNum !== 'string') return `${stringNum} is not a string`;
+  
+    stringNum = cryptoFormatting(stringNum).split('.');
+  
+    let value = stringNum[0] !== '0'
+      ? `${stringNum[0]}${stringNum[1]}` + '0'.repeat(8 - stringNum[1].length )
+      : `${stringNum[0]}${stringNum[1]}` + '0'.repeat(8 - stringNum[1].length );
+  
+    return Number(value);
+  }
 
-      num = Math.abs(num)
+  toCryptoString = (num) => {
+
+    if(typeof num !== 'number') return `${num} is not a number`;
+  
+    let value;
+    num = Math.round(num);
+  
+    if(num >= 0) {
+  
       num = num.toString();
-      return num.length <= 8 
-        ? '-0.' + '0'.repeat(8 - num.length) + num
-        : `-${num.slice(0,-8)}.${num.slice(-8)}`;
-
-    } else {
-
-      num = num.toString();
-      return num.length <= 8 
+  
+      value = num.length < 8 
         ? '0.' + '0'.repeat(8 - num.length) + num 
         : `${num.slice(0,-8)}.${num.slice(-8)}`;
-
+  
+    } else {
+  
+      num = Math.abs(num).toString();
+      
+      value = num.length < 8 
+        ? '-0.' + '0'.repeat(8 - num.length) + num 
+        : `-${num.slice(0,-8)}.${num.slice(-8)}`;
     }
+  
+    return value;
   }
 
   render() {
@@ -110,12 +128,12 @@ class App extends Component {
       <div className="App">
 
         <Form 
-          handleOnSubmit = {this.handleOnSubmit} 
+          handleOnSubmit = {this.handleOnSubmit}
         />
 
-        <h1>Price: {String(this.state.price)}</h1>
-        <h1>Quauntity: {String(this.state.amount)}</h1>
-        <h1>Amount: {String(this.state.sum)}</h1>
+        <h1>Price: {this.toCryptoString(this.state.price)} BTC</h1>
+        <h1>Quauntity: {this.toCryptoString(this.state.quantity)} DOGE</h1>
+        <h1>Amount: {this.toCryptoString(this.state.amount)} BTC</h1>
 
       </div>
     );

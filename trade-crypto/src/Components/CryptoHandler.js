@@ -1,9 +1,13 @@
 export const toCryptoValue = function () {
 
+  const cryptoFormatting = num => {
+    return num.split('.').length > 1 ? num + '0'.repeat(8 - num.split('.')[1].length) : num + '.00000000';
+  };
+
   let stringNum = this.toString();
   if(typeof stringNum !== 'string') return `${stringNum} is not a string`;
 
-  stringNum = stringNum.split('.');
+  stringNum = cryptoFormatting(stringNum).split('.');
 
   let value = stringNum[0] !== '0'
     ? `${stringNum[0]}${stringNum[1]}` + '0'.repeat(8 - stringNum[1].length )
