@@ -89,7 +89,7 @@ class Form extends React.Component {
       fee: cryptoFormat(this.state.feeRate * c),
       total: cryptoFormat(total),
       btcNewBalance: cryptoFormat(cryptoValue(this.state.btcBalance) - total),
-      
+
       btcPrice: d,
       [e.target.name]: e.target.value,
     })
@@ -141,6 +141,15 @@ class Form extends React.Component {
             readOnly
           />
 
+          <label> DOGE Balance: </label>
+          <input
+            name = {'dogeBalance'}
+            value = { this.state.dogeNewBalance || this.state.dogeBalance}
+            placeholder = {'0.00000001'}
+            type = "text"
+            readOnly
+          />
+
           <label> DOGE Price: </label>
           <input
             name = {'dogePrice'}
@@ -150,16 +159,7 @@ class Form extends React.Component {
             onChange = {this.handleOnChange}
           />
 
-          <label> DOGE Amount: </label>
-          <input
-            name = {'dogeAmount'}
-            value = {this.state.dogeAmount}
-            placeholder = {'0.00000001'}
-            type = "text"
-            onChange = {this.handleOnChange}
-          />
-
-          <label> BTC Total: </label>
+          <label> BTC Amount: </label>
           <input
             name = {'btcSum'}
             value = {this.state.btcSum}
@@ -168,7 +168,16 @@ class Form extends React.Component {
             onChange = {this.handleOnChange}
           />
 
-          <label> Fee: </label>
+          <label> DOGE Quantity: </label>
+          <input
+            name = {'dogeAmount'}
+            value = {this.state.dogeAmount}
+            placeholder = {'0.00000001'}
+            type = "text"
+            onChange = {this.handleOnChange}
+          />
+
+          <label> Fee Total: </label>
           <input
             name = {'fee'}
             value = {this.state.fee}
@@ -177,11 +186,22 @@ class Form extends React.Component {
             readOnly
           />
 
-          <label> Total: </label>
+          <label> BTC Total: </label>
           <input
             name = {'total'}
             value = {this.state.total}
             placeholder = {'0.00000001'}
+            type = "text"
+            readOnly
+          />
+
+          <hr />
+
+          <label> USD balance: </label>
+          <input
+            name = {'btcBalance'}
+            value = { this.state.usdNewBalance || this.state.usdBalance}
+            placeholder = {'$0.00'}
             type = "text"
             readOnly
           />
@@ -212,6 +232,25 @@ class Form extends React.Component {
             type = "text"
             onChange = {this.handleOnChange}
           />
+
+          <label> Fee USD Total: </label>
+          <input
+            name = {'usdFee'}
+            value = {this.state.usdFee}
+            placeholder = {'$0.00'}
+            type = "text"
+            readOnly
+          />
+
+          <label> USD Total: </label>
+          <input
+            name = {'usdTotal'}
+            value = {this.state.usdTotal}
+            placeholder = {'$0.00'}
+            type = "text"
+            readOnly
+          />
+
 
           <button type = {'submit'}>submit</button>
 

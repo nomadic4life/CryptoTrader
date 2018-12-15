@@ -19,9 +19,30 @@ import './App.css';
 // buyRate: [],
 // feeRate: 0.002,
 
+// presistent data
+// btc capital balance
+// usd value capital balance
+// btc balance
+// doge balance
+// usd balance
+
+
 class App extends Component {
 
   state = {
+    balance: {
+      btcCaptialBalance: 0, // btc capital source from deposits
+      usdValueCapitalBalance: 0, // btc capital source in usd value
+      btcBalance: 0, // btc balance from sells
+      dogeBalance: 0, // doge balance from buys
+      usdBalance: 0, // usd balance not needed here for testing might remove
+      btcTotalValueBalance: 0, // btc capital source + btc balance total
+      usdTotalValueBalance: 0, // btc capital source + btc balance total in usde value
+    },
+    price: {
+      dogePrice: 0, // doge-btc
+      btcPrice: 0, // btc-usd
+    },
     dogePrice: '',
     btcPrice: null,
     dogeQuantity: null,
@@ -33,18 +54,16 @@ class App extends Component {
   }
 
   handleOnSubmit = ({dogePrice, dogeAmount, btcSum}) => {
-
-    console.log(dogePrice, dogeAmount, btcSum)
-
-    console.log( dogePrice + '0'.repeat(8 - dogePrice.split('.')[1].length))
-
-    
+    const cryptoFormatting = num => {
+      return num.split('.').length > 1 ? num + '0'.repeat(8 - num.split('.')[1].length) : num + '.00000000';
+    }
 
     this.setState({
-      price:  dogePrice.split('.').length > 1 ? dogePrice + '0'.repeat(8 - dogePrice.split('.')[1].length) + ' BTC' : dogePrice + '.00000000 BTC' ,
-      amount: dogeAmount.split('.').length > 1 ? dogeAmount + '0'.repeat(8 - dogeAmount.split('.')[1].length) + ' DOGE' : dogeAmount + '.00000000 DOGE' ,
-      sum: btcSum.split('.').length > 1 ? btcSum + '0'.repeat(8 - btcSum.split('.')[1].length)  + ' BTC' : btcSum + '.00000000 BTC' ,
-    })
+      price:  cryptoFormatting(dogePrice) + ' BTC' ,
+      amount: cryptoFormatting(dogeAmount) + ' DOGE',
+      sum: cryptoFormatting(btcSum) + ' BTC' ,
+    });
+
   }
 
   render() {
@@ -56,9 +75,9 @@ class App extends Component {
           handleOnSubmit = {this.handleOnSubmit} 
         />
 
-        <h1>{String(this.state.price)}</h1>
-        <h1>{String(this.state.amount)}</h1>
-        <h1>{String(this.state.sum)}</h1>
+        <h1>Price: {String(this.state.price)}</h1>
+        <h1>Quauntity: {String(this.state.amount)}</h1>
+        <h1>Amount: {String(this.state.sum)}</h1>
 
       </div>
     );
