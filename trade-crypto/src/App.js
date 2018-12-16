@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import Form from './Components/Form'
 import './App.css';
-
+import { connect } from 'react-redux';
+import { updateState } from './actions'
 
 
 // needed Inputs
@@ -58,23 +59,29 @@ class App extends Component {
     //   buyDOGE: 0.002,
     // },
     dogePrice: '',
-    btcPrice: null,
-    dogeQuantity: null,
-    quantity: '', // doge
+    btcPrice: '',
+    dogeQuantity: '',
+    quantity: 0, // doge
     price: 0,  // btc
-    amount: '',  // btc
+    amount: 0,  // btc
     fee: null,  // btc
     total: null,  // btc
   }
 
   handleOnSubmit = ({dogePrice, dogeQuantity, btcAmount}) => {
-    const crypto = [dogePrice, dogeQuantity, btcAmount];   
-
-    this.setState({
+    const crypto = [dogePrice, dogeQuantity, btcAmount];  
+    
+    this.props.updateState({
       price:  this.toCryptoValue(dogePrice),
       quantity: this.toCryptoValue(dogeQuantity),
       amount: this.toCryptoValue(btcAmount),
-    });
+    })
+
+    // this.setState({
+    //   price:  this.toCryptoValue(dogePrice),
+    //   quantity: this.toCryptoValue(dogeQuantity),
+    //   amount: this.toCryptoValue(btcAmount),
+    // });
 
   }
 
@@ -131,13 +138,21 @@ class App extends Component {
           handleOnSubmit = {this.handleOnSubmit}
         />
 
-        <h1>Price: {this.toCryptoString(this.state.price)} BTC</h1>
-        <h1>Quauntity: {this.toCryptoString(this.state.quantity)} DOGE</h1>
-        <h1>Amount: {this.toCryptoString(this.state.amount)} BTC</h1>
+        <h1>Price: {this.toCryptoString(this.props.price)} BTC</h1>
+        <h1>Quauntity: {this.toCryptoString(this.props.quantity)} DOGE</h1>
+        <h1>Amount: {this.toCryptoString(this.props.amount)} BTC</h1>
 
       </div>
     );
   }
 }
 
-export default App;
+const mapStatetoProps = state => {
+  return {
+    price : state.price.dogePrice,
+    quantity: state.quantity.dogeQuantity,
+    amount: state.amount.btcAmount,
+  }
+}
+
+export default connect(mapStatetoProps, {updateState})(App);

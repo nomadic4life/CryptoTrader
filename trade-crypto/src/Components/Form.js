@@ -93,10 +93,6 @@ class Form extends React.Component {
 
     console.log( total, cryptoValue(this.state.btcBalance) - total);
 
-
-
-    //console.log(e.target.name === 'btcPrice' ? ` $${e.target.value}`: e.target.value,)
-
     this.setState({
       dogePrice: cryptoFormat(a),
       dogeQuantity: cryptoFormat(b),
@@ -110,24 +106,30 @@ class Form extends React.Component {
     })
 
     function cryptoFormat(num) {
-        
 
-      if(num < 0) {
-
-        num = Math.abs(num)
+      if(typeof num !== 'number') return `${num} is not a number`;
+    
+      let value;
+      num = Math.round(num);
+    
+      if(num >= 0) {
+    
         num = num.toString();
-        return num.length <= 8 
-          ? '-0.' + '0'.repeat(8 - num.length) + num
-          : `-${num.slice(0,-8)}.${num.slice(-8)}`;
-
-      } else {
-
-        num = num.toString();
-        return num.length <= 8 
+    
+        value = num.length < 8 
           ? '0.' + '0'.repeat(8 - num.length) + num 
           : `${num.slice(0,-8)}.${num.slice(-8)}`;
-
+    
+      } else {
+    
+        num = Math.abs(num).toString();
+        
+        value = num.length < 8 
+          ? '-0.' + '0'.repeat(8 - num.length) + num 
+          : `-${num.slice(0,-8)}.${num.slice(-8)}`;
       }
+    
+      return value;
 
     } // cryptoFormat(num)
 
