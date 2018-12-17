@@ -1,8 +1,9 @@
 
 export const updateState = cryptoData => {
   console.log(cryptoData)
-
-  return { type: 'UPDATE_DATA', payload: cryptoData };
+  if(cryptoData.type === 'doge-btc'){
+    return { type: 'UPDATE_DOGE', payload: cryptoData };
+  }
 }
 
 export const updateInputs = cryptoInputs => {

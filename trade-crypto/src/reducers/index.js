@@ -61,12 +61,26 @@ const initialState = {
     balance: '',
     qBalance: '',
   },
+  tradingPairs: [
+    {
+      id: 0,
+      pair: 'doge-btc',
+      amount: 'BTC',
+      quantity: 'DOGE',
+    },
+    {
+      id: 1,
+      pair: 'btc-usd',
+      amount: 'USD',
+      quantity: 'BTC',
+    },
+  ],
 }
 
 export const cryptoReducer = (state = initialState, action) => {
   console.log(state)
   switch (action.type) {
-    case 'UPDATE_DATA':
+    case 'UPDATE_DOGE':
       return ({
         ...state,
         balance: {
@@ -86,17 +100,8 @@ export const cryptoReducer = (state = initialState, action) => {
           ...state.amount,
           btcAmount: action.payload.amount,
         },
-        inputs: {
-          ...state.inputs,
-          price: '',
-          amount: '',
-          quantity: '',
-          fee: '',
-          total: '',
-          balance: '',
-          qBalance: '',
-        },
       })
+
       case 'UPDATE_INPUTS':
         return ({
           ...state,

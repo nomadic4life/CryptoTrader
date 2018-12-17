@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Form from './Components/Form'
 import './App.css';
 import { connect } from 'react-redux';
-import { updateState } from './actions'
+import { updateState, updateInputs } from './actions'
 
 
 class App extends Component {
@@ -18,24 +18,28 @@ class App extends Component {
     total: null,  // btc
   }
 
-  handleOnSubmit = ({price, quantity, amount, balance, qBalance}) => {
+  handleOnSubmit = ({price, quantity, amount, balance, qBalance}, tradeType) => {
     const crypto = [price, quantity, amount];  
     console.log(price, quantity, amount)
     
     this.props.updateState({
+      type: tradeType.pair,
       price:  this.toCryptoValue(price),
       quantity: this.toCryptoValue(quantity),
       amount: this.toCryptoValue(amount),
       btcBalance: this.toCryptoValue(balance),
       quantityBalance: this.toCryptoValue(qBalance),
-      // resetPrice: '',
-      // resetQuantity: '',
-      // resetAmount: '',
-      // resetFee: '',
-      // resetTotal: '',
-      // resetBalance: '',
     })
 
+    this.props.updateInputs({
+      price: '',
+      quantity: '',
+      amount: '',
+      fee: '',
+      total: '',
+      balance: '',
+      qBalance: '',
+    })
   }
 
   toCryptoValue = (stringNum) => {
@@ -111,4 +115,7 @@ const mapStatetoProps = state => {
   }
 }
 
-export default connect(mapStatetoProps, {updateState})(App);
+export default connect(mapStatetoProps, {
+  updateState,
+  updateInputs
+})(App);
