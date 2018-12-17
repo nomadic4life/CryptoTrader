@@ -5,59 +5,9 @@ import { connect } from 'react-redux';
 import { updateState } from './actions'
 
 
-// needed Inputs
-// btc price
-// doge price
-// usd capital
-// total trades or days to trade
-// trade cycle
-// term period || term rate
-// recurring capital
-// daily trade rate
-// randomize true or false // trade cycle // daily trade rate
-
-// minimumTradeRate: 50000,
-// tradeMultiplier: 2,
-// sellRate: 0.5,
-// buyRate: [],
-// feeRate: 0.002,
-
-// presistent data
-// btc capital balance
-// usd value capital balance
-// btc balance
-// doge balance
-// usd balance
-
-
 class App extends Component {
 
   state = {
-    balance: {
-      btcCaptialBalance: 0, // btc capital source from deposits
-      usdValueCapitalBalance: 0, // btc capital source in usd value
-      btcBalance: 0, // btc balance from sells
-      dogeBalance: 0, // doge balance from buys
-      usdBalance: 0, // usd balance not needed here for testing might remove
-      btcTotalValueBalance: 0, // btc capital source + btc balance total
-      usdTotalValueBalance: 0, // btc capital source + btc balance total in usde value
-    },
-    // price: {
-    //   dogePrice: 0, // doge-btc
-    //   btcPrice: 0, // btc-usd
-    // },
-    // amount: {
-    //   btcAmount: 0,
-    //   dogeAmount: 0,
-    // },
-    // quantity: {
-    //   btcQuantity: 0,
-    //   dogeQuantity: 0,
-    // },
-    // fee: {
-    //   buyBTC: 0.01,
-    //   buyDOGE: 0.002,
-    // },
     dogePrice: '',
     btcPrice: '',
     dogeQuantity: '',
@@ -68,20 +18,23 @@ class App extends Component {
     total: null,  // btc
   }
 
-  handleOnSubmit = ({dogePrice, dogeQuantity, btcAmount}) => {
-    const crypto = [dogePrice, dogeQuantity, btcAmount];  
+  handleOnSubmit = ({price, quantity, amount, balance, qBalance}) => {
+    const crypto = [price, quantity, amount];  
+    console.log(price, quantity, amount)
     
     this.props.updateState({
-      price:  this.toCryptoValue(dogePrice),
-      quantity: this.toCryptoValue(dogeQuantity),
-      amount: this.toCryptoValue(btcAmount),
+      price:  this.toCryptoValue(price),
+      quantity: this.toCryptoValue(quantity),
+      amount: this.toCryptoValue(amount),
+      btcBalance: this.toCryptoValue(balance),
+      quantityBalance: this.toCryptoValue(qBalance),
+      // resetPrice: '',
+      // resetQuantity: '',
+      // resetAmount: '',
+      // resetFee: '',
+      // resetTotal: '',
+      // resetBalance: '',
     })
-
-    // this.setState({
-    //   price:  this.toCryptoValue(dogePrice),
-    //   quantity: this.toCryptoValue(dogeQuantity),
-    //   amount: this.toCryptoValue(btcAmount),
-    // });
 
   }
 
@@ -104,7 +57,9 @@ class App extends Component {
 
   toCryptoString = (num) => {
 
-    if(typeof num !== 'number') return `${num} is not a number`;
+    // if(typeof num === 'string' && num === '') num = this.toCryptoValue(num || '0.00000000');
+
+    // if(typeof num !== 'number') return `${num} is not a number`;
   
     let value;
     num = Math.round(num);
@@ -113,7 +68,7 @@ class App extends Component {
   
       num = num.toString();
   
-      value = num.length < 8 
+      value = num.length <= 8 
         ? '0.' + '0'.repeat(8 - num.length) + num 
         : `${num.slice(0,-8)}.${num.slice(-8)}`;
   
@@ -121,7 +76,7 @@ class App extends Component {
   
       num = Math.abs(num).toString();
       
-      value = num.length < 8 
+      value = num.length <= 8 
         ? '-0.' + '0'.repeat(8 - num.length) + num 
         : `-${num.slice(0,-8)}.${num.slice(-8)}`;
     }
@@ -136,6 +91,7 @@ class App extends Component {
 
         <Form 
           handleOnSubmit = {this.handleOnSubmit}
+          toCryptoString = {this.toCryptoString}
         />
 
         <h1>Price: {this.toCryptoString(this.props.price)} BTC</h1>

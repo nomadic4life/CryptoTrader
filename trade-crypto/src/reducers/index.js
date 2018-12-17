@@ -1,11 +1,35 @@
 
+// initial state
+// needed Inputs
+// btc price
+// doge price
+// usd capital
+// total trades or days to trade
+// trade cycle
+// term period || term rate
+// recurring capital
+// daily trade rate
+// randomize true or false // trade cycle // daily trade rate
+
+// minimumTradeRate: 50000,
+// tradeMultiplier: 2,
+// sellRate: 0.5,
+// buyRate: [],
+// feeRate: 0.002,
+
+// presistent data
+// btc capital balance
+// usd value capital balance
+// btc balance
+// doge balance
+// usd balance
 
 // Initial state
 const initialState = {
   balance: {
     btcCaptialBalance: 0, // btc capital source from deposits
     usdValueCapitalBalance: 0, // btc capital source in usd value
-    btcBalance: 0, // btc balance from sells
+    btcBalance: 10000000, // btc balance from sells
     dogeBalance: 0, // doge balance from buys
     usdBalance: 0, // usd balance not needed here for testing might remove
     btcTotalValueBalance: 0, // btc capital source + btc balance total
@@ -28,6 +52,15 @@ const initialState = {
     buyDOGE: 0.002,
   },
   total: 0,  // btc
+  inputs: {
+    price: '',
+    amount: '',
+    quantity: '',
+    fee: '',
+    total: '',
+    balance: '',
+    qBalance: '',
+  },
 }
 
 export const cryptoReducer = (state = initialState, action) => {
@@ -36,6 +69,11 @@ export const cryptoReducer = (state = initialState, action) => {
     case 'UPDATE_DATA':
       return ({
         ...state,
+        balance: {
+          ...state.price,
+          btcBalance: action.payload.btcBalance,
+          dogeBalance: action.payload.quantityBalance,
+        },
         price: {
           ...state.price,
           dogePrice: action.payload.price,
@@ -48,7 +86,31 @@ export const cryptoReducer = (state = initialState, action) => {
           ...state.amount,
           btcAmount: action.payload.amount,
         },
+        inputs: {
+          ...state.inputs,
+          price: '',
+          amount: '',
+          quantity: '',
+          fee: '',
+          total: '',
+          balance: '',
+          qBalance: '',
+        },
       })
+      case 'UPDATE_INPUTS':
+        return ({
+          ...state,
+          inputs: {
+            ...state.inputs,
+            price: action.payload.price,
+            amount: action.payload.amount,
+            quantity: action.payload.quantity,
+            fee: action.payload.fee,
+            total: action.payload.total,
+            balance: action.payload.balance,
+            qBalance: action.payload.qBalance,
+          }
+        })
     default:
       return state
   }
