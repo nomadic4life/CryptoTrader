@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import Form from './Components/Form'
 import './App.css';
-import axios from 'axios';
 import { connect } from 'react-redux';
-import { updateState, updateInputs } from './actions'
+import { updateState, updateInputs, fetchPrice } from './actions'
 
 
 class App extends Component {
@@ -13,10 +12,11 @@ class App extends Component {
   }
 
   componentDidMount() {
-    axios
-      .get('https://api.pro.coinbase.com/products/BTC-USD/ticker')
-      .then( response => this.setState({btc: Number(response.data.price)}))
-      .catch( err => console.log(err))
+    this.props.fetchPrice()
+    // axios
+    //   .get('https://api.pro.coinbase.com/products/BTC-USD/ticker')
+    //   .then( response => this.setState({btc: Number(response.data.price)}))
+    //   .catch( err => console.log(err))
   }
 
   handleOnSubmit = ({price, quantity, amount, balance, qBalance}, tradeType) => {
@@ -113,7 +113,7 @@ class App extends Component {
         <h1>Price: {this.toCryptoString(this.props.price)} BTC</h1>
         <h1>Quauntity: {this.toCryptoString(this.props.quantity)} DOGE</h1>
         <h1>Amount: {this.toCryptoString(this.props.amount)} BTC</h1>
-        {this.state.btc && <h1>BTC Price: {this.usdString(this.state.btc)} </h1>}
+        {this.props.btc && <h1>BTC Price: {this.usdString(this.props.btc)} </h1>}
 
       </div>
     );
@@ -125,10 +125,12 @@ const mapStatetoProps = state => {
     price : state.price.dogePrice,
     quantity: state.quantity.dogeQuantity,
     amount: state.amount.btcAmount,
+    btc: state.price.btcPrice,
   }
 }
 
 export default connect(mapStatetoProps, {
   updateState,
-  updateInputs
+  updateInputs,
+  fetchPrice,
 })(App);

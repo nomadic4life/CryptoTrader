@@ -14,9 +14,20 @@ export const updateInputs = cryptoInputs => {
   return { type: 'UPDATE_INPUTS', payload: cryptoInputs };
 }
 
-export const fetchPrice = price => dispatch => {
-  console.log(cryptoInputs)
-
-  return { type: 'UPDATE_INPUTS', payload: cryptoInputs };
+export const fetchPrice = () => (dispatch) => {
+  axios
+    .get('https://api.pro.coinbase.com/products/BTC-USD/ticker')
+    .then( response => { 
+      dispatch({
+        type: 'FETCH_PRICE_SUCCESS', 
+        payload:  Number(response.data.price)
+      })
+    })
+    .catch( err => { 
+      dispatch({
+        type: 'FETCH_PRICE_FAILURE', 
+        payload:  err,
+    })
+  })
 }
 

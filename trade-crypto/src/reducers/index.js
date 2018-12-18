@@ -75,11 +75,29 @@ const initialState = {
       quantity: 'BTC',
     },
   ],
+  error: null,
 }
 
 export const cryptoReducer = (state = initialState, action) => {
   console.log(state)
   switch (action.type) {
+    
+    case 'FETCH_PRICE_SUCCESS':
+      return ({
+        ...state,
+        price: {
+          ...state.price,
+          btcPrice: action.payload,
+        },
+        error: null,
+      })
+
+    case 'FETCH_PRICE_FAILURE':
+      return ({
+        ...state,
+        error: action.payload,
+      })
+
     case 'UPDATE_DOGE':
       return ({
         ...state,
