@@ -44,13 +44,13 @@ const initialState = {
       USD: 0,     // btc capital source + btc balance total
       BTC: 0,     // btc capital source + btc balance total in usde value
     },
-    btcCaptialBalance: 0, // btc capital source from deposits
-    usdValueCapitalBalance: 0, // btc capital source in usd value
-    btcBalance: 10000000, // btc balance from sells
-    dogeBalance: 0, // doge balance from buys
-    usdBalance: 0, // usd balance not needed here for testing might remove
-    btcTotalValueBalance: 0, // btc capital source + btc balance total
-    usdTotalValueBalance: 0, // btc capital source + btc balance total in usde value
+    // btcCaptialBalance: 0, // btc capital source from deposits
+    // usdValueCapitalBalance: 0, // btc capital source in usd value
+    // btcBalance: 10000000, // btc balance from sells
+    // dogeBalance: 0, // doge balance from buys
+    // usdBalance: 0, // usd balance not needed here for testing might remove
+    // btcTotalValueBalance: 0, // btc capital source + btc balance total
+    // usdTotalValueBalance: 0, // btc capital source + btc balance total in usde value
   },
   price: {
     BTC: 0, // btc-usd

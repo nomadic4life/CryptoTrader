@@ -50,38 +50,51 @@ class Form extends React.Component {
       if(e.target.value.includes(alpha[char])) return;
     }
 
-    function cryptoValue(num) {
-      return Math.round(Number(num) * Math.pow(10,8));
+    // creating constraints for inputs
+    // limits decimal input to 8 digits
+    if(e.target.value.includes('.')) {
+      let demiDigit = e.target.value.split('.')[1];
+      let numDigit = e.target.value.split('.')[0];
+      if(demiDigit.length > 8) return;
+      if(numDigit.length > 8) return;
+    } else {
+      let numDigit = e.target.value;
+      if(numDigit.length > 8) return;
     }
 
     let a,b,c;
     let inputValue = e.target.value === '.' ? '0.00000000' : e.target.value;
-    a = cryptoValue(this.props.price) || 0;
-    b = cryptoValue(this.props.base) || 0;
-    c = cryptoValue(this.props.quote) || 0;
+    let total, totalQuote, totalBase, fee, base, quote
+    let toCryptoValue = this.props.toCryptoValue;
+    let toCryptoString = this.props.toCryptoString;
+
+    a = toCryptoValue(this.props.price) || 0;
+    b = toCryptoValue(this.props.base) || 0;
+    c = toCryptoValue(this.props.quote) || 0;
+    console.log(typeof a, typeof b, typeof c)
 
     if(e.target.name === 'price') {
 
-      a = cryptoValue(inputValue); 
-      c = Math.round(Math.round(a * b) / Math.pow(10,8));  
+      a = toCryptoValue(inputValue); 
+      c = Math.round(Math.round(a * b) / Math.pow(10,8));
+      c = c > 123456789123456789 ? undefined : c;  
     } else if(e.target.name === 'base') {
 
-      b = cryptoValue(inputValue);
+      b = toCryptoValue(inputValue);
       c = Math.round(Math.round(a * b) / Math.pow(10,8));
+      c = c > 123456789123456789 ? undefined : c; 
     } else if(e.target.name === 'quote') {
 
-      c = cryptoValue(inputValue);
+      c = toCryptoValue(inputValue);
       b = Math.round(1/a * c * Math.pow(10,8));
+      b = b > 123456789123456789 ? undefined : b; 
     }
 
-    let total;
-    let fee = this.props.feeRate * c;
-    let base = type.base;
-    let quote = type.quote;
-    let totalQuote, totalBase;
+    console.log(typeof a, typeof b, typeof c)
 
-    console.log(Math.round(this.props.feeRate * c + c), 'buy', Math.round(c -this.props.feeRate * c), 'sell')
-    console.log(type.isSelling)
+    fee = this.props.feeRate * c;
+    base = type.base;
+    quote = type.quote;
 
     if(type.isSelling){
       total = Math.round( c - fee );
@@ -94,94 +107,22 @@ class Form extends React.Component {
     }
 
     this.props.updateInputs({
-      price: cryptoFormat(a),
-      base: cryptoFormat(b),
-      quote: cryptoFormat(c),
-      fee: cryptoFormat(fee),
-      total: cryptoFormat(total),
-      totalQuoteBalance: cryptoFormat(totalQuote), //
-      totalBaseBalance: cryptoFormat(totalBase), //
+      price: toCryptoString(a),
+      base: toCryptoString(b),
+      quote: toCryptoString(c),
+      fee: toCryptoString(fee),
+      total: toCryptoString(total),
+      totalQuoteBalance: toCryptoString(totalQuote), //
+      totalBaseBalance: toCryptoString(totalBase), //
       [e.target.name]: e.target.value,
     })
 
-    function cryptoFormat(num) {
-
-      if(typeof num !== 'number') return `${num} is not a number`;
-    
-      let value;
-      num = Math.round(num);
-    
-      if(num >= 0) {
-    
-        num = num.toString();
-    
-        value = num.length <= 8 
-          ? '0.' + '0'.repeat(8 - num.length) + num 
-          : `${num.slice(0,-8)}.${num.slice(-8)}`;
-    
-      } else {
-    
-        num = Math.abs(num).toString();
-        
-        value = num.length <= 8 
-          ? '-0.' + '0'.repeat(8 - num.length) + num 
-          : `-${num.slice(0,-8)}.${num.slice(-8)}`;
-      }
-    
-      return value;
-
-    } // cryptoFormat(num)
-
   } // handleOnChange(e)
-
-  // tradeSell = () => {
-  //   let a,b,c;
-  //   let inputValue = e.target.value === '.' ? '0.00000000' : e.target.value;
-  //   a = cryptoValue(this.props.price) || 0;
-  //   b = cryptoValue(this.props.base) || 0;
-  //   c = cryptoValue(this.props.quote) || 0;
-
-  //   if(e.target.name === 'price') {
-
-  //     a = cryptoValue(inputValue); 
-  //     c = Math.round(Math.round(a * b) / Math.pow(10,8));  
-  //   } else if(e.target.name === 'base') {
-
-  //     b = cryptoValue(inputValue);
-  //     c = Math.round(Math.round(a * b) / Math.pow(10,8));
-  //   } else if(e.target.name === 'quote') {
-
-  //     c = cryptoValue(inputValue);
-  //     b = Math.round(1/a * c * Math.pow(10,8));
-  //   }
-
-  //   let total = Math.round(this.props.feeRate * c - c);
-  //   let fee = this.props.feeRate * c;
-  //   let base = type.base;
-  //   let quote = type.quote;
-
-  //   this.props.updateInputs({
-  //     price: cryptoFormat(a),
-  //     base: cryptoFormat(b),
-  //     quote: cryptoFormat(c),
-  //     fee: cryptoFormat(fee),
-  //     total: cryptoFormat(total),
-  //     totalQuoteBalance: cryptoFormat(this.props.balance[quote] + total), //
-  //     totalBaseBalance: cryptoFormat(this.props.balance[base] - b), //
-  //     [e.target.name]: e.target.value,
-  //   })
-  // }
-
-  tradeBuy = () =>{
-
-  }
 
   render() {
 
     return (
       <FormContent>    
-
-       
 
         {this.props.tradeType.map( type => {
 

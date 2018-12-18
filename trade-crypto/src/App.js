@@ -12,15 +12,25 @@ class App extends Component {
   }
 
   handleOnSubmit = ({price, base, quote, totalBaseBalance, totalQuoteBalance}, tradeType) => {
+
+    if(price === 'undefined' || base === 'undefined' || quote === 'undefined') {
+
+      console.log('error')
+      // set state to message to indicate didn't update or was an error;
+
+    } else {
+
+      this.props.updateState({
+        type: tradeType.pair,
+        price:  this.toCryptoValue(price),
+        base: this.toCryptoValue(base),
+        quote: this.toCryptoValue(quote),
+        totalQuoteBalance: this.toCryptoValue(totalQuoteBalance),
+        totalBaseBalance: this.toCryptoValue(totalBaseBalance),
+      })
+
+    }
     
-    this.props.updateState({
-      type: tradeType.pair,
-      price:  this.toCryptoValue(price),
-      base: this.toCryptoValue(base),
-      quote: this.toCryptoValue(quote),
-      totalQuoteBalance: this.toCryptoValue(totalQuoteBalance),
-      totalBaseBalance: this.toCryptoValue(totalBaseBalance),
-    })
 
     this.props.updateInputs({
       price: '',
@@ -34,6 +44,8 @@ class App extends Component {
   }
 
   toCryptoValue = (stringNum) => {
+
+    if(stringNum === undefined) return undefined;
 
     const cryptoFormatting = num => {
       return num.split('.').length > 1 ? num + '0'.repeat(8 - num.split('.')[1].length) : num + '.00000000';
@@ -51,6 +63,9 @@ class App extends Component {
   }
 
   toCryptoString = (num) => {
+
+    if(num === undefined) return "undefined";
+    
 
     // if(typeof num === 'string' && num === '') num = this.toCryptoValue(num || '0.00000000');
 
@@ -98,6 +113,7 @@ class App extends Component {
         <Form 
           handleOnSubmit = {this.handleOnSubmit}
           toCryptoString = {this.toCryptoString}
+          toCryptoValue = {this.toCryptoValue}
           toDollarString = {this.usdString}
         />
 
