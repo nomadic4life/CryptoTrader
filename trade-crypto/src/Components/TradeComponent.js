@@ -10,7 +10,6 @@ const FormContent = styled.div`
 `;
 
 const TradeComponent = props => {
-  console.log(props)
 
   return (
     <FormContent>
@@ -33,19 +32,19 @@ const TradeComponent = props => {
             onChange = {props.handleOnChange}
           />
 
-          <label> {props.label.amount} Amount: </label>
+          <label> {props.label.quote} Amount: </label>
           <input
-            name = {'amount'}
-            value = {props.amount}
+            name = {'quote'}
+            value = {props.quote}
             placeholder = {'0.00000000'}
             type = "text"
             onChange = {props.handleOnChange}
           />
 
-          <label> {props.label.quantity} Quantity: </label>
+          <label> {props.label.base} Quantity: </label>
           <input
-            name = {'quantity'}
-            value = {props.quantity}
+            name = {'base'}
+            value = {props.base}
             placeholder = {'0.00000000'}
             type = "text"
             onChange = {props.handleOnChange}

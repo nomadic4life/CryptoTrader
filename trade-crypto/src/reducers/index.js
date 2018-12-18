@@ -27,6 +27,23 @@
 // Initial state
 const initialState = {
   balance: {
+    capital: {
+      USD: 0,     // usd balance not needed here for testing might remove
+      BTC: 0,     // btc capital source from deposits
+      DOGE: 0,    // might not need
+    },
+    capitalValue: {
+      USD: 0,     // btc capital source in usd value
+    },
+    holding: {
+      USD: 45,     // btc capital source in usd value maybe... could be for something else
+      BTC: 10000000,     // btc balance from sells
+      DOGE: 10000000000,    // doge balance from buys
+    },
+    value: {
+      USD: 0,     // btc capital source + btc balance total
+      BTC: 0,     // btc capital source + btc balance total in usde value
+    },
     btcCaptialBalance: 0, // btc capital source from deposits
     usdValueCapitalBalance: 0, // btc capital source in usd value
     btcBalance: 10000000, // btc balance from sells
@@ -36,50 +53,53 @@ const initialState = {
     usdTotalValueBalance: 0, // btc capital source + btc balance total in usde value
   },
   price: {
-    btcPrice: 0, // btc-usd
-    dogePrice: 0, // doge-btc
-  },
-  amount: {
-    btcAmount: 0,
-    dogeAmount: 0,
-  },
-  quantity: {
-    btcQuantity: 0,
-    dogeQuantity: 0,
+    BTC: 0, // btc-usd
+    DOGE: 0, // doge-btc
   },
   fee: {
-    buyBTC: 0.01,
-    buyDOGE: 0.002,
+    gdxFee: 0.01,
+    cryptopiaFee: 0.002,
   },
-  total: 0,  // btc
   inputs: {
     price: '',
-    amount: '',
-    quantity: '',
+    quote: '',
+    base: '',
     fee: '',
     total: '',
-    balance: '',
-    qBalance: '',
+    totalQuoteBalance: '', // qBalance
+    totalBaseBalance: '',
   },
   tradingPairs: [
     {
       id: 0,
-      pair: 'doge-btc',
-      amount: 'BTC',
-      quantity: 'DOGE',
+      pair: 'doge-btc', // base-quote
+      quote: 'BTC', // amount
+      base: 'DOGE', // quantity
     },
     {
       id: 1,
       pair: 'btc-usd',
-      amount: 'USD',
-      quantity: 'BTC',
+      quote: 'USD', // amount
+      base: 'BTC',  // quantity
     },
   ],
   error: null,
+
+  // for testing purposes. trying to think what these are for. 
+  // thinking about just using balance and holding
+  quote: {
+    BTC: 10,
+    DOGE: 10,
+  },
+  base: {
+    BTC: 10,
+    DOGE: 10,
+  },
+  total: 0,  // btc
 }
 
 export const cryptoReducer = (state = initialState, action) => {
-  console.log(state)
+
   switch (action.type) {
     
     case 'FETCH_PRICE_BTC_SUCCESS':
@@ -87,7 +107,7 @@ export const cryptoReducer = (state = initialState, action) => {
         ...state,
         price: {
           ...state.price,
-          btcPrice: action.payload,
+          BTC: action.payload,
         },
         error: null,
       })
@@ -97,7 +117,7 @@ export const cryptoReducer = (state = initialState, action) => {
         ...state,
         price: {
           ...state.price,
-          dogePrice: action.payload,
+          DOGE: action.payload,
         },
         error: null,
       })
@@ -112,21 +132,24 @@ export const cryptoReducer = (state = initialState, action) => {
       return ({
         ...state,
         balance: {
-          ...state.price,
-          btcBalance: action.payload.btcBalance,
-          dogeBalance: action.payload.quantityBalance,
+          ...state.balance,
+          holding: {
+            ...state.balance.holding,
+            BTC:  action.payload.totalQuoteBalance,
+            DOGE: action.payload.totalBaseBalance,
+          },
         },
         price: {
           ...state.price,
-          dogePrice: action.payload.price,
+          DOGE: action.payload.price,
         },
-        quantity: {
+        base: {
           ...state.quantity,
-          dogeQuantity: action.payload.quantity,
+          DOGE: action.payload.base,
         },
-        amount: {
+        quote: {
           ...state.amount,
-          btcAmount: action.payload.amount,
+          BTC: action.payload.quote,
         },
       })
 
@@ -136,12 +159,12 @@ export const cryptoReducer = (state = initialState, action) => {
           inputs: {
             ...state.inputs,
             price: action.payload.price,
-            amount: action.payload.amount,
-            quantity: action.payload.quantity,
+            quote: action.payload.quote,
+            base: action.payload.base,
             fee: action.payload.fee,
             total: action.payload.total,
-            balance: action.payload.balance,
-            qBalance: action.payload.qBalance,
+            totalQuoteBalance: action.payload.totalQuoteBalance, // qBalance
+            totalBaseBalance: action.payload.totalBaseBalance,
           }
         })
     default:

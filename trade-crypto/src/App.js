@@ -11,27 +11,25 @@ class App extends Component {
     this.props.fetchPrice()
   }
 
-  handleOnSubmit = ({price, quantity, amount, balance, qBalance}, tradeType) => {
-    const crypto = [price, quantity, amount];  
-    console.log(price, quantity, amount)
+  handleOnSubmit = ({price, base, quote, totalBaseBalance, totalQuoteBalance}, tradeType) => {
     
     this.props.updateState({
       type: tradeType.pair,
       price:  this.toCryptoValue(price),
-      quantity: this.toCryptoValue(quantity),
-      amount: this.toCryptoValue(amount),
-      btcBalance: this.toCryptoValue(balance),
-      quantityBalance: this.toCryptoValue(qBalance),
+      base: this.toCryptoValue(base),
+      quote: this.toCryptoValue(quote),
+      totalQuoteBalance: this.toCryptoValue(totalQuoteBalance),
+      totalBaseBalance: this.toCryptoValue(totalBaseBalance),
     })
 
     this.props.updateInputs({
       price: '',
-      quantity: '',
-      amount: '',
+      base: '',
+      quote: '',
       fee: '',
       total: '',
-      balance: '',
-      qBalance: '',
+      totalQuoteBalance: '',
+      totalBaseBalance: '',
     })
   }
 
@@ -93,7 +91,6 @@ class App extends Component {
   }
 
   render() {
-    console.log(this.props.doge)
 
     return (
       <div className="App">
@@ -101,11 +98,12 @@ class App extends Component {
         <Form 
           handleOnSubmit = {this.handleOnSubmit}
           toCryptoString = {this.toCryptoString}
+          toDollarString = {this.usdString}
         />
 
         {this.props.doge && <h1>Price: {this.toCryptoString(this.props.doge)} BTC</h1>}
-        <h1>Quauntity: {this.toCryptoString(this.props.quantity)} DOGE</h1>
-        <h1>Amount: {this.toCryptoString(this.props.amount)} BTC</h1>
+        <h1>Quauntity: {this.toCryptoString(this.props.base)} DOGE</h1>
+        <h1>Amount: {this.toCryptoString(this.props.quote)} BTC</h1>
         {this.props.btc && <h1>BTC Price: {this.usdString(this.props.btc)} </h1>}
 
       </div>
@@ -115,11 +113,11 @@ class App extends Component {
 
 const mapStatetoProps = state => {
   return {
-    price : state.price.dogePrice,
-    quantity: state.quantity.dogeQuantity,
-    amount: state.amount.btcAmount,
-    btc: state.price.btcPrice,
-    doge: state.price.dogePrice,
+    // price : state.price.doge,
+    base: state.base.DOGE,
+    quote: state.quote.BTC,
+    doge: state.price.DOGE,
+    btc: state.price.BTC,
   }
 }
 

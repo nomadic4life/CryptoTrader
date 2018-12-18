@@ -43,9 +43,9 @@ const FormContent = styled.div`
 
 class Form extends React.Component {
 
-  handleOnChange = e => {
+  handleOnChange = (e, type) => {
 
-    let alpha = 'abcdefghifklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZY ;"`~!@#%^&*()_+=-[]{}\\|\'/,';
+    let alpha = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZY ;:<>?`~!@#%^&*()_+=-[]{}\\|\'/,';
     for(let char in alpha) {
       if(e.target.value.includes(alpha[char])) return;
     }
@@ -56,33 +56,36 @@ class Form extends React.Component {
 
     let a,b,c;
     a = cryptoValue(this.props.price) || 0;
-    b = cryptoValue(this.props.quantity) || 0;
-    c = cryptoValue(this.props.amount) || 0;
+    b = cryptoValue(this.props.base) || 0;
+    c = cryptoValue(this.props.quote) || 0;
 
     if(e.target.name === 'price') {
 
       a = cryptoValue(e.target.value); 
       c = Math.round(Math.round(a * b) / Math.pow(10,8));  
-    } else if(e.target.name === 'quantity') {
+    } else if(e.target.name === 'base') {
 
       b = cryptoValue(e.target.value);
       c = Math.round(Math.round(a * b) / Math.pow(10,8));
-    } else if(e.target.name === 'amount') {
+    } else if(e.target.name === 'quote') {
 
       c = cryptoValue(e.target.value);
       b = Math.round(1/a * c * Math.pow(10,8));
     }
 
     let total = Math.round(this.props.feeRate * c + c);
+    let fee = this.props.feeRate * c;
+    let base = type.base;
+    let quote = type.quote;
 
     this.props.updateInputs({
       price: cryptoFormat(a),
-      quantity: cryptoFormat(b),
-      amount: cryptoFormat(c),
-      fee: cryptoFormat(this.props.feeRate * c),
+      base: cryptoFormat(b),
+      quote: cryptoFormat(c),
+      fee: cryptoFormat(fee),
       total: cryptoFormat(total),
-      balance: cryptoFormat(this.props.btcBalance - total),
-      qBalance: cryptoFormat(this.props.dogeBalance + b),
+      totalQuoteBalance: cryptoFormat(this.props.balance[quote] - total), //
+      totalBaseBalance: cryptoFormat(this.props.balance[base] + b), //
       [e.target.name]: e.target.value,
     })
 
@@ -121,36 +124,7 @@ class Form extends React.Component {
     return (
       <FormContent>    
 
-        <div className='balance'>
-        
-          <label> USD balance: </label>
-          <input
-            name = {'usdBalance'}
-            value = { 'currently no state'}
-            placeholder = {'$0.00'}
-            type = "text"
-            readOnly
-          />
-
-          <label> BTC balance: </label>
-          <input
-            name = {'btcBalance'}
-            value = { this.props.calculatedBalance || this.props.toCryptoString(this.props.btcBalance) }
-            placeholder = {'0.00000000'}
-            type = "text"
-            readOnly
-          />
-
-          <label> DOGE Balance: </label>
-          <input
-            name = {'dogeBalance'}
-            value = { this.props.qBalance || this.props.toCryptoString(this.props.dogeBalance)}
-            placeholder = {'0.00000000'}
-            type = "text"
-            readOnly
-          />
-
-        </div>
+       
 
         {this.props.tradeType.map( type => {
 
@@ -158,22 +132,61 @@ class Form extends React.Component {
             <Route key = {type.id} path = {`/trade/${type.pair}`} render = { props => {
 
               return (
-                <TradeComponent 
-                  {...props}
-                  {...this.props}
-                  label = {{
-                    price: type.quantity,
-                    amount: type.amount,
-                    quantity: type.quantity,
-                    total: type.amount,
-                  }}
-                  tradeType = {{
-                    pair: type.pair,
-                    amount: type.amount,
-                    quantity: type.quantity,
-                  }}
-                  handleOnChange = {this.handleOnChange}
-                />
+                <React.Fragment>
+
+                  <div className='balance'>
+        
+                    <label> USD balance: </label>
+                    <input
+                      name = {'usdBalance'}
+                      value = { this.props.toDollarString(this.props.balance.USD) }
+                      placeholder = {'$0.00'}
+                      type = "text"
+                      readOnly
+                    />
+
+                    <label> BTC balance: </label>
+                    <input
+                      name = {'btcBalance'}
+                      value = { (type.quote === 'BTC' 
+                        ? this.props.totalQuoteBalance
+                        : this.props.totalBaseBalance) || this.props.toCryptoString(this.props.balance.BTC)}
+                      placeholder = {'0.00000000'}
+                      type = "text"
+                      readOnly
+                    />
+
+                    <label> DOGE Balance: </label>
+                    <input
+                      name = {'dogeBalance'}
+                      value = { (type.quote === 'DOGE' 
+                      ? this.props.totalQuoteBalance
+                      : this.props.totalBaseBalance) || 
+                      this.props.toCryptoString(this.props.balance.DOGE)}
+                      placeholder = {'0.00000000'}
+                      type = "text"
+                      readOnly
+                    />
+
+                  </div>
+
+                  <TradeComponent 
+                    {...props}
+                    {...this.props}
+                    label = {{
+                      price: type.base,
+                      quote: type.quote,
+                      base: type.base,
+                      total: type.quote,
+                    }}
+                    tradeType = {{
+                      pair: type.pair,
+                      quote: type.quote,
+                      base: type.base,
+                    }}
+                    handleOnChange = { e => this.handleOnChange( e, type)}
+                  />
+                </React.Fragment>
               )
             }} />
           )
@@ -186,20 +199,21 @@ class Form extends React.Component {
 
 const mapStateToProps = state => {
   return ({
+    input: state.inputs,
+
     price: state.inputs.price,
-    amount: state.inputs.amount,
-    quantity: state.inputs.quantity,
-    qBalance: state.inputs.qBalance,
-    btcBalance: state.balance.btcBalance,
-    dogeBalance: state.balance.dogeBalance,
-    calculatedBalance: state.inputs.balance,
-    dogeBalance: state.balance.dogeBalance,
-    usdBalance: state.balance.usdBalance,
-    feeRate: state.fee.buyDOGE,
+    quote: state.inputs.quote,
+    base: state.inputs.base,
+
     fee: state.inputs.fee,
     total: state.inputs.total,
-    input: state.inputs,
-    tradeType: state.tradingPairs
+    totalQuoteBalance: state.inputs.totalQuoteBalance,
+    totalBaseBalance: state.inputs.totalBaseBalance,
+
+    balance: state.balance.holding,
+
+    feeRate: state.fee.cryptopiaFee,
+    tradeType: state.tradingPairs,
   })
 }
 
