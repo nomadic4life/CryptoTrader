@@ -36,8 +36,8 @@ const initialState = {
     usdTotalValueBalance: 0, // btc capital source + btc balance total in usde value
   },
   price: {
-    dogePrice: 0, // doge-btc
     btcPrice: 0, // btc-usd
+    dogePrice: 0, // doge-btc
   },
   amount: {
     btcAmount: 0,

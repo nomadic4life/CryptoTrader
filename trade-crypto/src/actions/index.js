@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 
 export const updateState = cryptoData => {
   console.log(cryptoData)
@@ -7,6 +9,12 @@ export const updateState = cryptoData => {
 }
 
 export const updateInputs = cryptoInputs => {
+  console.log(cryptoInputs)
+
+  return { type: 'UPDATE_INPUTS', payload: cryptoInputs };
+}
+
+export const fetchPrice = price => dispatch => {
   console.log(cryptoInputs)
 
   return { type: 'UPDATE_INPUTS', payload: cryptoInputs };

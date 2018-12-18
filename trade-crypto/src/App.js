@@ -15,7 +15,7 @@ class App extends Component {
   componentDidMount() {
     axios
       .get('https://api.pro.coinbase.com/products/BTC-USD/ticker')
-      .then( response => this.setState({btc: response.data.price}))
+      .then( response => this.setState({btc: Number(response.data.price)}))
       .catch( err => console.log(err))
   }
 
@@ -89,7 +89,18 @@ class App extends Component {
     return value;
   }
 
+  usdValue = num => {
+
+  }
+
+  usdString = num => {
+    num = num.toString()
+    return num.includes('.') ? `$ ${num.split('.')[1].length === 2 ? num : `${num}0`}` : `$ ${num}.00`;
+  }
+
   render() {
+
+    console.log(this.state.btc)
 
     return (
       <div className="App">
@@ -102,7 +113,7 @@ class App extends Component {
         <h1>Price: {this.toCryptoString(this.props.price)} BTC</h1>
         <h1>Quauntity: {this.toCryptoString(this.props.quantity)} DOGE</h1>
         <h1>Amount: {this.toCryptoString(this.props.amount)} BTC</h1>
-        {this.state.btc && <h1>BTC Price: ${this.state.btc} </h1>}
+        {this.state.btc && <h1>BTC Price: {this.usdString(this.state.btc)} </h1>}
 
       </div>
     );
