@@ -55,21 +55,22 @@ class Form extends React.Component {
     }
 
     let a,b,c;
+    let inputValue = e.target.value === '.' ? '0.00000000' : e.target.value;
     a = cryptoValue(this.props.price) || 0;
     b = cryptoValue(this.props.base) || 0;
     c = cryptoValue(this.props.quote) || 0;
 
     if(e.target.name === 'price') {
 
-      a = cryptoValue(e.target.value); 
+      a = cryptoValue(inputValue); 
       c = Math.round(Math.round(a * b) / Math.pow(10,8));  
     } else if(e.target.name === 'base') {
 
-      b = cryptoValue(e.target.value);
+      b = cryptoValue(inputValue);
       c = Math.round(Math.round(a * b) / Math.pow(10,8));
     } else if(e.target.name === 'quote') {
 
-      c = cryptoValue(e.target.value);
+      c = cryptoValue(inputValue);
       b = Math.round(1/a * c * Math.pow(10,8));
     }
 
