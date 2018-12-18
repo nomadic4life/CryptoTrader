@@ -19,8 +19,24 @@ export const fetchPrice = () => (dispatch) => {
     .get('https://api.pro.coinbase.com/products/BTC-USD/ticker')
     .then( response => { 
       dispatch({
-        type: 'FETCH_PRICE_SUCCESS', 
+        type: 'FETCH_PRICE_BTC_SUCCESS', 
         payload:  Number(response.data.price)
+      })
+    })
+    .catch( err => { 
+      dispatch({
+        type: 'FETCH_PRICE_FAILURE', 
+        payload:  err,
+    })
+  })
+  
+  axios
+    .get('https://www.cryptopia.co.nz/api/GetMarket/DOGE_BTC')
+    .then( response => { 
+      console.log(response.data.Data.LastPrice * Math.pow(10, 8))
+      dispatch({
+        type: 'FETCH_PRICE_DOGE_SUCCESS', 
+        payload:  response.data.Data.LastPrice * Math.pow(10, 8),
       })
     })
     .catch( err => { 

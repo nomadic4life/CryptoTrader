@@ -7,16 +7,8 @@ import { updateState, updateInputs, fetchPrice } from './actions'
 
 class App extends Component {
 
-  state = {
-    btc: '',
-  }
-
   componentDidMount() {
     this.props.fetchPrice()
-    // axios
-    //   .get('https://api.pro.coinbase.com/products/BTC-USD/ticker')
-    //   .then( response => this.setState({btc: Number(response.data.price)}))
-    //   .catch( err => console.log(err))
   }
 
   handleOnSubmit = ({price, quantity, amount, balance, qBalance}, tradeType) => {
@@ -95,12 +87,13 @@ class App extends Component {
 
   usdString = num => {
     num = num.toString()
-    return num.includes('.') ? `$ ${num.split('.')[1].length === 2 ? num : `${num}0`}` : `$ ${num}.00`;
+    return num.includes('.') 
+      ? `$ ${num.split('.')[1].length === 2 
+      ? num : `${num}0`}` : `$ ${num}.00`;
   }
 
   render() {
-
-    console.log(this.state.btc)
+    console.log(this.props.doge)
 
     return (
       <div className="App">
@@ -110,7 +103,7 @@ class App extends Component {
           toCryptoString = {this.toCryptoString}
         />
 
-        <h1>Price: {this.toCryptoString(this.props.price)} BTC</h1>
+        {this.props.doge && <h1>Price: {this.toCryptoString(this.props.doge)} BTC</h1>}
         <h1>Quauntity: {this.toCryptoString(this.props.quantity)} DOGE</h1>
         <h1>Amount: {this.toCryptoString(this.props.amount)} BTC</h1>
         {this.props.btc && <h1>BTC Price: {this.usdString(this.props.btc)} </h1>}
@@ -126,6 +119,7 @@ const mapStatetoProps = state => {
     quantity: state.quantity.dogeQuantity,
     amount: state.amount.btcAmount,
     btc: state.price.btcPrice,
+    doge: state.price.dogePrice,
   }
 }
 

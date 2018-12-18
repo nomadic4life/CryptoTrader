@@ -82,12 +82,22 @@ export const cryptoReducer = (state = initialState, action) => {
   console.log(state)
   switch (action.type) {
     
-    case 'FETCH_PRICE_SUCCESS':
+    case 'FETCH_PRICE_BTC_SUCCESS':
       return ({
         ...state,
         price: {
           ...state.price,
           btcPrice: action.payload,
+        },
+        error: null,
+      })
+
+    case 'FETCH_PRICE_DOGE_SUCCESS':
+      return ({
+        ...state,
+        price: {
+          ...state.price,
+          dogePrice: action.payload,
         },
         error: null,
       })
