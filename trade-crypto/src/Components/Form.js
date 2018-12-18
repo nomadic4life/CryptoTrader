@@ -4,6 +4,7 @@ import TradeComponent from './TradeComponent';
 import { Route } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { updateInputs } from '../actions'
+import BalanceContainer from './BalanceContainer';
 
 const FormContent = styled.div`
   border: 1px solid red;
@@ -71,7 +72,6 @@ class Form extends React.Component {
     a = toCryptoValue(this.props.price) || 0;
     b = toCryptoValue(this.props.base) || 0;
     c = toCryptoValue(this.props.quote) || 0;
-    console.log(typeof a, typeof b, typeof c)
 
     if(e.target.name === 'price') {
 
@@ -90,8 +90,6 @@ class Form extends React.Component {
       b = b > 123456789123456789 ? undefined : b; 
     }
 
-    console.log(typeof a, typeof b, typeof c)
-
     fee = this.props.feeRate * c;
     base = type.base;
     quote = type.quote;
@@ -102,8 +100,8 @@ class Form extends React.Component {
       totalBase = this.props.balance[base] - b;
     } else {
       total = Math.round( c + fee );
-      totalQuote = this.props.balance[quote] - Math.round( c + fee );
-      totalBase = this.props.balance[base] + b;
+      totalQuote = this.props.balance[quote] - Math.round( c + fee ) || this.props.balance[quote];
+      totalBase = this.props.balance[base] + b || this.props.balance[base];
     }
 
     this.props.updateInputs({
@@ -132,42 +130,12 @@ class Form extends React.Component {
               return (
                 <React.Fragment>
 
-                  <div className='balance'>
-        
-                    <label> USD balance: </label>
-                    <input
-                      name = {'usdBalance'}
-                      value = { this.props.toDollarString(this.props.balance.USD) }
-                      placeholder = {'$0.00'}
-                      type = "text"
-                      readOnly
-                    />
-
-                    <label> BTC balance: </label>
-                    <input
-                      name = {'btcBalance'}
-                      value = { (type.quote === 'BTC' 
-                        ? this.props.totalQuoteBalance
-                        : this.props.totalBaseBalance) || this.props.toCryptoString(this.props.balance.BTC)}
-                      placeholder = {'0.00000000'}
-                      type = "text"
-                      readOnly
-                    />
-
-                    <label> DOGE Balance: </label>
-                    <input
-                      name = {'dogeBalance'}
-                      value = { (type.quote === 'DOGE' 
-                      ? this.props.totalQuoteBalance
-                      : this.props.totalBaseBalance) || 
-                      this.props.toCryptoString(this.props.balance.DOGE)}
-                      placeholder = {'0.00000000'}
-                      type = "text"
-                      readOnly
-                    />
-
-                  </div>
-
+                  <BalanceContainer
+                      {...props}
+                      {...this.props}
+                      type = {type}
+                  />
+                  
                   <TradeComponent 
                     {...props}
                     {...this.props}
@@ -217,5 +185,3 @@ const mapStateToProps = state => {
 }
 
 export default connect(mapStateToProps,{updateInputs})(Form);
-
-//  if interger is to big  return the largest interger number or maybe null to prevent errors or floating points
