@@ -74,10 +74,24 @@ class Form extends React.Component {
       b = Math.round(1/a * c * Math.pow(10,8));
     }
 
-    let total = Math.round(this.props.feeRate * c + c);
+    let total;
     let fee = this.props.feeRate * c;
     let base = type.base;
     let quote = type.quote;
+    let totalQuote, totalBase;
+
+    console.log(Math.round(this.props.feeRate * c + c), 'buy', Math.round(c -this.props.feeRate * c), 'sell')
+    console.log(type.isSelling)
+
+    if(type.isSelling){
+      total = Math.round( c - fee );
+      totalQuote = this.props.balance[quote] + Math.round( c - fee );
+      totalBase = this.props.balance[base] - b;
+    } else {
+      total = Math.round( c + fee );
+      totalQuote = this.props.balance[quote] - Math.round( c + fee );
+      totalBase = this.props.balance[base] + b;
+    }
 
     this.props.updateInputs({
       price: cryptoFormat(a),
@@ -85,8 +99,8 @@ class Form extends React.Component {
       quote: cryptoFormat(c),
       fee: cryptoFormat(fee),
       total: cryptoFormat(total),
-      totalQuoteBalance: cryptoFormat(this.props.balance[quote] - total), //
-      totalBaseBalance: cryptoFormat(this.props.balance[base] + b), //
+      totalQuoteBalance: cryptoFormat(totalQuote), //
+      totalBaseBalance: cryptoFormat(totalBase), //
       [e.target.name]: e.target.value,
     })
 
@@ -119,6 +133,48 @@ class Form extends React.Component {
     } // cryptoFormat(num)
 
   } // handleOnChange(e)
+
+  // tradeSell = () => {
+  //   let a,b,c;
+  //   let inputValue = e.target.value === '.' ? '0.00000000' : e.target.value;
+  //   a = cryptoValue(this.props.price) || 0;
+  //   b = cryptoValue(this.props.base) || 0;
+  //   c = cryptoValue(this.props.quote) || 0;
+
+  //   if(e.target.name === 'price') {
+
+  //     a = cryptoValue(inputValue); 
+  //     c = Math.round(Math.round(a * b) / Math.pow(10,8));  
+  //   } else if(e.target.name === 'base') {
+
+  //     b = cryptoValue(inputValue);
+  //     c = Math.round(Math.round(a * b) / Math.pow(10,8));
+  //   } else if(e.target.name === 'quote') {
+
+  //     c = cryptoValue(inputValue);
+  //     b = Math.round(1/a * c * Math.pow(10,8));
+  //   }
+
+  //   let total = Math.round(this.props.feeRate * c - c);
+  //   let fee = this.props.feeRate * c;
+  //   let base = type.base;
+  //   let quote = type.quote;
+
+  //   this.props.updateInputs({
+  //     price: cryptoFormat(a),
+  //     base: cryptoFormat(b),
+  //     quote: cryptoFormat(c),
+  //     fee: cryptoFormat(fee),
+  //     total: cryptoFormat(total),
+  //     totalQuoteBalance: cryptoFormat(this.props.balance[quote] + total), //
+  //     totalBaseBalance: cryptoFormat(this.props.balance[base] - b), //
+  //     [e.target.name]: e.target.value,
+  //   })
+  // }
+
+  tradeBuy = () =>{
+
+  }
 
   render() {
 
@@ -184,6 +240,7 @@ class Form extends React.Component {
                       pair: type.pair,
                       quote: type.quote,
                       base: type.base,
+                      isSelling: type.isSelling,
                     }}
                     handleOnChange = { e => this.handleOnChange( e, type)}
                   />
@@ -220,5 +277,4 @@ const mapStateToProps = state => {
 
 export default connect(mapStateToProps,{updateInputs})(Form);
 
-//  if only a '.' neec check for that condition and return 0.00000000
 //  if interger is to big  return the largest interger number or maybe null to prevent errors or floating points

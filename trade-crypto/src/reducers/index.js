@@ -38,7 +38,7 @@ const initialState = {
     holding: {
       USD: 45,     // btc capital source in usd value maybe... could be for something else
       BTC: 10000000,     // btc balance from sells
-      DOGE: 10000000000,    // doge balance from buys
+      DOGE: 0,    // doge balance from buys
     },
     value: {
       USD: 0,     // btc capital source + btc balance total
@@ -75,12 +75,14 @@ const initialState = {
       pair: 'doge-btc', // base-quote
       quote: 'BTC', // amount
       base: 'DOGE', // quantity
+      isSelling: false,
     },
     {
       id: 1,
       pair: 'btc-usd',
       quote: 'USD', // amount
       base: 'BTC',  // quantity
+      isSelling: true,
     },
   ],
   error: null,
