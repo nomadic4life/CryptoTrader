@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import Form from './Components/Form'
+import Display from './Components/Display'
 import './App.css';
 import { connect } from 'react-redux';
-import { updateState, updateInputs, fetchPrice } from './actions'
+import { updateState, updateInputs, fetchPrice } from './actions';
 
 
 class App extends Component {
@@ -13,7 +14,7 @@ class App extends Component {
 
   handleOnSubmit = ({price, base, quote, totalBaseBalance, totalQuoteBalance}, tradeType) => {
 
-    if(price === 'undefined' || base === 'undefined' || quote === 'undefined') {
+    if((price === 'undefined' || base === 'undefined' || quote === 'undefined') || totalQuoteBalance === '' || totalBaseBalance === '') {
 
       console.log('error')
       // set state to message to indicate didn't update or was an error;
@@ -117,10 +118,15 @@ class App extends Component {
           toDollarString = {this.usdString}
         />
 
-        {this.props.doge && <h1>Price: {this.toCryptoString(this.props.doge)} BTC</h1>}
+        <Display
+          btcPrice = {this.usdString(this.props.btc)}
+          dogePrice = {this.toCryptoString(this.props.doge)}
+        />
+
+        {/* {this.props.doge && <h1>Price: {this.toCryptoString(this.props.doge)} BTC</h1>}
         <h1>Quauntity: {this.toCryptoString(this.props.base)} DOGE</h1>
         <h1>Amount: {this.toCryptoString(this.props.quote)} BTC</h1>
-        {this.props.btc && <h1>BTC Price: {this.usdString(this.props.btc)} </h1>}
+        {this.props.btc && <h1>BTC Price: {this.usdString(this.props.btc)} </h1>} */}
 
       </div>
     );

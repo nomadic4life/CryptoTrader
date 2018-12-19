@@ -104,6 +104,8 @@ class Form extends React.Component {
       totalBase = this.props.balance[base] + b || this.props.balance[base];
     }
 
+    console.log(this.props.balance[base], this.props.balance[quote])
+
     this.props.updateInputs({
       price: toCryptoString(a),
       base: toCryptoString(b),
