@@ -1,32 +1,22 @@
 
 // initial state
 // needed Inputs
-// btc price
-// doge price
-// usd capital
 // total trades or days to trade
 // trade cycle
-// term period || term rate
-// recurring capital
 // daily trade rate
 // randomize true or false // trade cycle // daily trade rate
-
-// minimumTradeRate: 50000,
-// tradeMultiplier: 2,
-// sellRate: 0.5,
-// buyRate: [],
-// feeRate: 0.002,
 
 // presistent data
 // btc capital balance
 // usd value capital balance
-// btc balance
-// doge balance
-// usd balance
 
 // Initial state
 const initialState = {
   balance: {
+    deposits: {
+      USD: 0,       // total accumulated deposits
+      BTCValue: 0,  // value of usd deposits in btc at time of deposit might not need
+    },
     capital: {
       USD: 0,     // usd balance not needed here for testing might remove
       BTC: 0,     // btc capital source from deposits
@@ -34,11 +24,12 @@ const initialState = {
     },
     capitalValue: {
       USD: 0,     // btc capital source in usd value
+      BTC: 0,     // value of usd deposits in btc at time of deposit
     },
     holding: {
       USD: 45,     // btc capital source in usd value maybe... could be for something else
-      BTC: 10000000,     // btc balance from sells
-      DOGE: 0,    // doge balance from buys
+      BTC: 10000000,     // btc balance from sells - trades
+      DOGE: 0,    // doge balance from buys - trades
     },
     value: {
       USD: 0,     // btc capital source + btc balance total
@@ -56,18 +47,30 @@ const initialState = {
     BTC: 0, // btc-usd
     DOGE: 0, // doge-btc
   },
-  fee: {
-    gdxFee: 0.01,
-    cryptopiaFee: 0.002,
-  },
   inputs: {
     price: '',
-    quote: '',
-    base: '',
+    quote: '',  // order amount
+    base: '',   // quantity amount
     fee: '',
     total: '',
     totalQuoteBalance: '', // qBalance
     totalBaseBalance: '',
+    orderType: 'buy', // buy || sell
+    transferType: 'deposit', // trade || deposit || widthdraw
+    pair: 'BTC-USD', 
+    isSelling: false, // might not need this property if have orderType
+  },
+  mensurativeComputation: {
+    feeRate: {
+      gdxFee: 0.01,
+      cryptopiaFee: 0.002,
+    },
+    minimumTradeRate: 50000,
+    tradeMultiplier: 2,
+    sellRate: 0.5,  // might change
+    buyRate: [],    // might change
+    recuringCapital: 0,
+    termPeriod: 0,  // term rate
   },
   tradingPairs: [
     {
@@ -75,17 +78,37 @@ const initialState = {
       pair: 'doge-btc', // base-quote
       quote: 'BTC', // amount
       base: 'DOGE', // quantity
-      isSelling: false,
     },
     {
       id: 1,
       pair: 'btc-usd',
       quote: 'USD', // amount
       base: 'BTC',  // quantity
-      isSelling: true,
     },
   ],
   error: null,
+  transactionLedger: [ // might just call ledger
+    {
+      order_id: 0,
+      date: 0,
+      price: 0,
+      quote: 0,
+      base: 0,
+      fee: 0,
+      total: 0,
+      tradeType: 'buy', // buy || sell
+      transferType: 'deposit', // deposit || widthdraw || trade
+      pair: 'BTC-USD', // base-quote string
+      metadata: { // need think about what will be part of metadata
+        buyRecord: 0,
+        sellRecord: 0,
+        high: 0, // highest sell
+        low: 0, // lowest buy
+        totalValue: 0,
+        direction: 'increment', // incremnt price going up, decrement price going down
+      },
+    },
+  ],
 
   // for testing purposes. trying to think what these are for. 
   // thinking about just using balance and holding

@@ -80,16 +80,17 @@ const Display = props => {
 
   }
 
-  let display = numberFormating('1.23450000');
+  // let display = numberFormating(props.dogePrice);
 
   return (
     <Price>
-      {display}
       <div>{props.btcPrice} USD last trade price</div>
-      <div>{props.dogePrice} DOGE last trade price</div>
+      <div>{numberFormating(props.dogePrice)} DOGE last trade price</div>
+      <div>{numberFormating('0.01542320')} BTC Deposit Amount</div>
+      <div>{numberFormating('0.11542320')} BTC Balance</div>
     </Price>
   )
-  
+
 }
 
 export default Display
