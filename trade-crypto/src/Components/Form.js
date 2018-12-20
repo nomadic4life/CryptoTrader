@@ -45,6 +45,7 @@ const FormContent = styled.div`
 class Form extends React.Component {
 
   handleOnChange = (e, type) => {
+    console.log(e.target)
 
     let alpha = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZY ;:<>?`~!@#%^&*()_+=-[]{}\\|\'/,';
     for(let char in alpha) {
@@ -53,7 +54,8 @@ class Form extends React.Component {
 
     // creating constraints for inputs
     // limits decimal input to 8 digits
-    if(e.target.value.includes('.')) {
+    if(e === '') console.log('here');
+    else if(e.target.value.includes('.')) {
       let demiDigit = e.target.value.split('.')[1];
       let numDigit = e.target.value.split('.')[0];
       if(demiDigit.length > 8) return;
@@ -94,7 +96,7 @@ class Form extends React.Component {
     base = type.base;
     quote = type.quote;
 
-    if(type.isSelling){
+    if(type.orderType === 'SELL'){
       total = Math.round( c - fee );
       totalQuote = this.props.balance[quote] + Math.round( c - fee );
       totalBase = this.props.balance[base] - b;
@@ -104,20 +106,36 @@ class Form extends React.Component {
       totalBase = this.props.balance[base] + b || this.props.balance[base];
     }
 
-    console.log(this.props.balance[base], this.props.balance[quote])
-
     this.props.updateInputs({
       price: toCryptoString(a),
       base: toCryptoString(b),
       quote: toCryptoString(c),
       fee: toCryptoString(fee),
       total: toCryptoString(total),
-      totalQuoteBalance: toCryptoString(totalQuote), //
-      totalBaseBalance: toCryptoString(totalBase), //
+      totalQuoteBalance: toCryptoString(totalQuote),
+      totalBaseBalance: toCryptoString(totalBase),
+      orderType: type.orderType,
+      transfertype: type.transferType,
+      pair: type.pair,
       [e.target.name]: e.target.value,
     })
 
   } // handleOnChange(e)
+
+  handleOrderType = (action, type) => {
+    
+    if(action === 'BUY') {
+      action = 'SELL';
+    } else if(action === 'SELL') {
+      action = 'BUY';
+    }
+
+    this.handleOnChange({target: { value: ''}}, {...type, orderType: action})
+  }
+
+  handleTransferType = (action, type) => {
+    this.handleOnChange({target: { value: ''}}, {...type, transferType: action});
+  }
 
   render() {
 
@@ -151,9 +169,11 @@ class Form extends React.Component {
                       pair: type.pair,
                       quote: type.quote,
                       base: type.base,
-                      isSelling: type.isSelling,
+                      orderType: this.props.input.orderType || 'BUY',
+                      transferType: this.props.input.tradeType || type.pair === 'BTC-USD' ? 'DEPOSIT' : 'TRADE',
                     }}
-                    handleOnChange = { e => this.handleOnChange( e, type)}
+                    handleOnChange = { this.handleOnChange }
+                    handleOrderType = { this.handleOrderType }
                   />
                 </React.Fragment>
               )
@@ -168,6 +188,8 @@ class Form extends React.Component {
 
 const mapStateToProps = state => {
   return ({
+
+    // -- inputs -- //
     input: state.inputs,
 
     price: state.inputs.price,
@@ -178,10 +200,14 @@ const mapStateToProps = state => {
     total: state.inputs.total,
     totalQuoteBalance: state.inputs.totalQuoteBalance,
     totalBaseBalance: state.inputs.totalBaseBalance,
+    orderType: state.inputs.orderType,
+    transferType: state.inputs.transferType,
+    pair: state.inputs.pair,
+    // -- inputs -- //
 
     balance: state.balance.holding,
 
-    feeRate: state.fee.cryptopiaFee,
+    feeRate: state.mensurativeComputation.feeRate.cryptopiaFee,
     tradeType: state.tradingPairs,
   })
 }

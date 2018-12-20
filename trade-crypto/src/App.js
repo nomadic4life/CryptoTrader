@@ -41,6 +41,9 @@ class App extends Component {
       total: '',
       totalQuoteBalance: '',
       totalBaseBalance: '',
+      orderType: '',
+      transferType: '',
+      pair: '',
     })
   }
 

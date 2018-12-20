@@ -35,6 +35,11 @@ const initialState = {
       USD: 0,     // btc capital source + btc balance total
       BTC: 0,     // btc capital source + btc balance total in usde value
     },
+    proceeds: {
+      earnings: 0,
+      earningsRatio: 0,
+      yeild: 0,
+    },
     // btcCaptialBalance: 0, // btc capital source from deposits
     // usdValueCapitalBalance: 0, // btc capital source in usd value
     // btcBalance: 10000000, // btc balance from sells
@@ -51,14 +56,16 @@ const initialState = {
     price: '',
     quote: '',  // order amount
     base: '',   // quantity amount
+    //computed Inputs
     fee: '',
     total: '',
     totalQuoteBalance: '', // qBalance
     totalBaseBalance: '',
-    orderType: 'buy', // buy || sell
-    transferType: 'deposit', // trade || deposit || widthdraw
-    pair: 'BTC-USD', 
-    isSelling: false, // might not need this property if have orderType
+    // selection choices
+    orderType: '', // buy || sell
+    transferType: '', // trade || deposit || widthdraw
+    pair: '', 
+    // isSelling: false, // might not need this property if have orderType
   },
   mensurativeComputation: {
     feeRate: {
@@ -178,7 +185,26 @@ export const cryptoReducer = (state = initialState, action) => {
         },
       })
 
+      case 'UPDATE_TRANSFER_TYPE':
+        return ({
+          ...state,
+          inputs: {
+            ...state.inputs,
+            transferType: action.payload.transferType,
+          }
+        })
+
+      case 'UPDATE_ORDER_TYPE':
+        return ({
+          ...state,
+          inputs: {
+            ...state.inputs,
+            orderType: action.payload.orderType,
+          }
+        })
+
       case 'UPDATE_INPUTS':
+      console.log(state.inputs, 'UPDATE INPUTS')
         return ({
           ...state,
           inputs: {
@@ -188,8 +214,12 @@ export const cryptoReducer = (state = initialState, action) => {
             base: action.payload.base,
             fee: action.payload.fee,
             total: action.payload.total,
-            totalQuoteBalance: action.payload.totalQuoteBalance, // qBalance
+            totalQuoteBalance: action.payload.totalQuoteBalance,
             totalBaseBalance: action.payload.totalBaseBalance,
+            orderType: action.payload.orderType,
+            transferType: action.payload.transferType,
+            pair: action.payload.pair, 
+            // isSelling: action.payload.isSelling, // might not need this property if have orderType
           }
         })
     default:

@@ -7,6 +7,43 @@ const FormContent = styled.div`
     display: flex;
     flex-direction: column;
   }
+  .order-box-buy {
+    cursor: pointer;
+    border: 1px solid black;
+    width: 50%;
+    display: inline;
+    // justify-content: space-around;
+    
+    .order-type-buy {
+      background: lightgreen;
+    }
+    
+    .order-type-sell {
+      background: lightgrey;
+      color: white;
+    }
+  }
+
+  .order-box-sell {
+    cursor: pointer;
+    border: 1px solid black;
+    width: 50%;
+    display: inline;
+    // justify-content: space-around;
+    
+    .order-type-buy {
+      background: lightgrey;
+      color: white;
+    }
+    
+    .order-type-sell {
+      background: red;
+    }
+  }
+
+  span {
+    padding: 0 12px;
+  }
 `;
 
 const TradeComponent = props => {
@@ -29,7 +66,7 @@ const TradeComponent = props => {
             value = {props.price}
             placeholder = {'0.00000000'}
             type = "text"
-            onChange = {props.handleOnChange}
+            onChange = {e => props.handleOnChange( e, props.tradeType)}
           />
 
           <label> {props.label.quote} Amount: </label>
@@ -38,7 +75,7 @@ const TradeComponent = props => {
             value = {props.quote}
             placeholder = {'0.00000000'}
             type = "text"
-            onChange = {props.handleOnChange}
+            onChange = {e => props.handleOnChange( e, props.tradeType)}
           />
 
           <label> {props.label.base} Quantity: </label>
@@ -47,7 +84,7 @@ const TradeComponent = props => {
             value = {props.base}
             placeholder = {'0.00000000'}
             type = "text"
-            onChange = {props.handleOnChange}
+            onChange = {e => props.handleOnChange( e, props.tradeType)}
           />
 
           <label> Fee Total: </label>
@@ -70,6 +107,19 @@ const TradeComponent = props => {
 
           <button type = {'submit'}>submit</button>
         </form>
+
+        <div 
+          onClick={ () => props.handleOrderType(props.tradeType.orderType, props.tradeType)} 
+          className={`order-box-${props.tradeType.orderType === 'BUY' ? `buy` : `sell`}`}>
+
+          <span className={`order-type-buy`}>BUY</span>
+          <span className={`order-type-sell`}>SELL</span>
+
+        </div>
+
+        <div>trade or deposit or widthdraw</div>
+        {/* <div>pair btc-usd</div> */}
+
 
       </div>
     </FormContent>

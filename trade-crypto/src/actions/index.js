@@ -9,6 +9,15 @@ export const updateState = cryptoData => {
 }
 
 export const updateInputs = cryptoInputs => {
+  console.log('here in action', cryptoInputs)
+
+  if(cryptoInputs.selection === 'orderType'){
+    return { type: 'UPDATE_ORDER_TYPE', payload: cryptoInputs };
+  }
+
+  if(cryptoInputs.selection === 'transferType'){
+    return { type: 'UPDATE_TRANSFER_TYPE', payload: cryptoInputs };
+  }
 
   return { type: 'UPDATE_INPUTS', payload: cryptoInputs };
 }
