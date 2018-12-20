@@ -82,13 +82,13 @@ const initialState = {
   tradingPairs: [
     {
       id: 0,
-      pair: 'doge-btc', // base-quote
+      pair: 'DOGE-BTC', // base-quote
       quote: 'BTC', // amount
       base: 'DOGE', // quantity
     },
     {
       id: 1,
-      pair: 'btc-usd',
+      pair: 'BTC-USD',
       quote: 'USD', // amount
       base: 'BTC',  // quantity
     },
@@ -185,26 +185,26 @@ export const cryptoReducer = (state = initialState, action) => {
         },
       })
 
-      case 'UPDATE_TRANSFER_TYPE':
-        return ({
-          ...state,
-          inputs: {
-            ...state.inputs,
-            transferType: action.payload.transferType,
-          }
-        })
+      // case 'UPDATE_TRANSFER_TYPE':
+      //   return ({
+      //     ...state,
+      //     inputs: {
+      //       ...state.inputs,
+      //       transferType: action.payload.transferType,
+      //     }
+      //   })
 
-      case 'UPDATE_ORDER_TYPE':
-        return ({
-          ...state,
-          inputs: {
-            ...state.inputs,
-            orderType: action.payload.orderType,
-          }
-        })
+      // case 'UPDATE_ORDER_TYPE':
+      //   return ({
+      //     ...state,
+      //     inputs: {
+      //       ...state.inputs,
+      //       orderType: action.payload.orderType,
+      //     }
+      //   })
 
       case 'UPDATE_INPUTS':
-      console.log(state.inputs, 'UPDATE INPUTS')
+
         return ({
           ...state,
           inputs: {
@@ -219,7 +219,6 @@ export const cryptoReducer = (state = initialState, action) => {
             orderType: action.payload.orderType,
             transferType: action.payload.transferType,
             pair: action.payload.pair, 
-            // isSelling: action.payload.isSelling, // might not need this property if have orderType
           }
         })
     default:

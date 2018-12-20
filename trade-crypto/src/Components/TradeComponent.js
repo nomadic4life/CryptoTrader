@@ -44,9 +44,28 @@ const FormContent = styled.div`
   span {
     padding: 0 12px;
   }
+
+  .transfer-type {
+    border: 1px solid black;
+    
+  }
+
+  .selected {
+    background: lightgreen;
+  }
+
+  .deselected {
+    background: lightyellow;
+  }
 `;
 
 const TradeComponent = props => {
+  // console.log(typeof props.price['BTC'])
+
+  // // initiate selected inputs into state input
+  // if(props.input.transferType === '') {
+  //   props.handleSelected(props.tradeType)
+  // }
 
   return (
     <FormContent>
@@ -63,7 +82,7 @@ const TradeComponent = props => {
           <label> {props.label.price} Price: </label>
           <input
             name = {'price'}
-            value = {props.price}
+            value = {props.input.price}
             placeholder = {'0.00000000'}
             type = "text"
             onChange = {e => props.handleOnChange( e, props.tradeType)}
@@ -117,7 +136,20 @@ const TradeComponent = props => {
 
         </div>
 
-        <div>trade or deposit or widthdraw</div>
+        <div className='transfer-type'>
+          <span
+            onClick={ () => props.handleTransferType('TRADE', props.tradeType)}
+            className={ `${props.tradeType.transferType === 'TRADE' ? 'selected' : 'deselected'}`}
+          >TRADE</span>
+          <span
+            onClick={ () => props.handleTransferType('DEPOSIT', props.tradeType)}
+            className={ props.tradeType.transferType === 'DEPOSIT' ? 'selected' : 'deselected'}
+          >DEPOSIT</span>
+          <span
+            onClick={ () => props.handleTransferType('WIDTHDRAW', props.tradeType)}
+            className={ props.tradeType.transferType === 'WIDTHDRAW' ? 'selected' : 'deselected'}
+          >WIDTHDRAW</span>
+        </div>
         {/* <div>pair btc-usd</div> */}
 
 

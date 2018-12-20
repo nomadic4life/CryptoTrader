@@ -8,16 +8,19 @@ export const updateState = cryptoData => {
   }
 }
 
+export const initiateInputs = cryptoInputs => {
+  return { type: 'INIT_INPUTS', payload: cryptoInputs };
+}
+
 export const updateInputs = cryptoInputs => {
-  console.log('here in action', cryptoInputs)
 
-  if(cryptoInputs.selection === 'orderType'){
-    return { type: 'UPDATE_ORDER_TYPE', payload: cryptoInputs };
-  }
+  // if(cryptoInputs.selection === 'orderType'){
+  //   return { type: 'UPDATE_ORDER_TYPE', payload: cryptoInputs };
+  // }
 
-  if(cryptoInputs.selection === 'transferType'){
-    return { type: 'UPDATE_TRANSFER_TYPE', payload: cryptoInputs };
-  }
+  // if(cryptoInputs.selection === 'transferType'){
+  //   return { type: 'UPDATE_TRANSFER_TYPE', payload: cryptoInputs };
+  // }
 
   return { type: 'UPDATE_INPUTS', payload: cryptoInputs };
 }
@@ -26,6 +29,7 @@ export const fetchPrice = () => (dispatch) => {
   axios
     .get('https://api.pro.coinbase.com/products/BTC-USD/ticker')
     .then( response => { 
+      console.log(response.data.price)
       dispatch({
         type: 'FETCH_PRICE_BTC_SUCCESS', 
         payload:  Number(response.data.price)

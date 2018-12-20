@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Form from './Components/Form'
 import Display from './Components/Display'
+import { Route } from 'react-router-dom';
 import './App.css';
 import { connect } from 'react-redux';
 import { updateState, updateInputs, fetchPrice } from './actions';
@@ -114,12 +115,17 @@ class App extends Component {
     return (
       <div className="App">
 
-        <Form 
-          handleOnSubmit = {this.handleOnSubmit}
-          toCryptoString = {this.toCryptoString}
-          toCryptoValue = {this.toCryptoValue}
-          toDollarString = {this.usdString}
-        />
+        <Route path='/trade' render={ props => {
+          return (
+            <Form 
+              {...props}
+              handleOnSubmit = {this.handleOnSubmit}
+              toCryptoString = {this.toCryptoString}
+              toCryptoValue = {this.toCryptoValue}
+              toDollarString = {this.usdString}
+            />
+          )
+        }} />
 
         <Display
           btcPrice = {this.usdString(this.props.btc)}

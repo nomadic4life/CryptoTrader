@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import TradeComponent from './TradeComponent';
 import { Route } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { updateInputs } from '../actions'
+import { updateInputs, initiateInputs } from '../actions'
 import BalanceContainer from './BalanceContainer';
 
 const FormContent = styled.div`
@@ -44,8 +44,51 @@ const FormContent = styled.div`
 
 class Form extends React.Component {
 
+  componentDidUpdate() {
+    console.log('did update', this.props.price, this.props.input.transferType, this.props.location.pathname)
+
+    let price = this.props.location.pathname.split('-')[0].split('/')[2].toUpperCase();
+
+    if(this.props.location.pathname === '/trade/btc-usd' && this.props.input.transferType === '' && this.props.price['BTC'] > 0) {
+      console.log('yolo')
+      this.props.updateInputs({
+        price: this.props.price['BTC'],
+        quote: '',
+        base: '',
+        fee: '',
+        total: '',
+        totalQuoteBalance: '',
+        totalBaseBalance: '',
+        orderType: 'BUY',
+        transferType: 'DEPOSIT',
+        pair: 'BTC-USD', 
+      })
+    } else if(this.props.input.transferType === '') {
+      console.log(this.props.price[price], this.props.toCryptoString(this.props.price[price]), price)
+      this.props.updateInputs({
+        price: this.props.toCryptoString(this.props.price[price]),
+        quote: '',
+        base: '',
+        fee: '',
+        total: '',
+        totalQuoteBalance: '',
+        totalBaseBalance: '',
+        orderType: 'BUY',
+        transferType: 'TRADE',
+        pair: 'BTC-USD',
+      })
+    }
+
+    
+
+    // if(this.props.input.transferType === '') {
+    //   this.handleSelected(props.tradeType)
+    // }
+  }
+
   handleOnChange = (e, type) => {
-    console.log(e.target)
+
+    console.log(this.props.input.transferType)
 
     let alpha = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZY ;:<>?`~!@#%^&*()_+=-[]{}\\|\'/,';
     for(let char in alpha) {
@@ -75,6 +118,12 @@ class Form extends React.Component {
     b = toCryptoValue(this.props.base) || 0;
     c = toCryptoValue(this.props.quote) || 0;
 
+    if(type.pair === 'BTC-USD') {
+      console.log('here', this.props.price['BTC'])
+      a = this.props.price['BTC'];
+      c = this.props.base;
+    }
+
     if(e.target.name === 'price') {
 
       a = toCryptoValue(inputValue); 
@@ -87,35 +136,59 @@ class Form extends React.Component {
       c = c > 123456789123456789 ? undefined : c; 
     } else if(e.target.name === 'quote') {
 
-      c = toCryptoValue(inputValue);
+      c = type.pair === 'BTC-USD' ? inputValue: toCryptoValue(inputValue);
       b = Math.round(1/a * c * Math.pow(10,8));
       b = b > 123456789123456789 ? undefined : b; 
     }
-
-    fee = this.props.feeRate * c;
+    let feeRate = this.props.feeRate['cryptopiaFee'];
+    console.log(feeRate)
+    fee = type.pair === 'BTC-USD' ? feeRate * b : feeRate * c;
     base = type.base;
     quote = type.quote;
 
-    if(type.orderType === 'SELL'){
+    if(type.orderType === 'SELL' && type.pair !== 'BTC-USD'){
       total = Math.round( c - fee );
       totalQuote = this.props.balance[quote] + Math.round( c - fee );
       totalBase = this.props.balance[base] - b;
-    } else {
+    } else if(type.pair !== 'BTC-USD') {
       total = Math.round( c + fee );
       totalQuote = this.props.balance[quote] - Math.round( c + fee ) || this.props.balance[quote];
       totalBase = this.props.balance[base] + b || this.props.balance[base];
     }
 
+    console.log(type.orderType, type.pair)
+    if(type.orderType === 'SELL' && type.pair === 'BTC-USD'){
+      console.log('seeling here')
+      total = Math.round( b + fee );
+      totalQuote = this.props.balance[quote] + Math.round( b + fee );
+      totalBase = this.props.balance[base] - c;
+    } else if(type.pair === 'BTC-USD') {
+      console.log('buying here')
+      total = Math.round( b - fee );
+      totalQuote = 0;
+      totalBase = this.props.balance['BTC'] + total || this.props.balance['BTC'];
+    }
+
+    console.log(a,b,c)
+
+    a = type.pair === 'BTC-USD' ? a : toCryptoString(a);
+    b = toCryptoString(b);
+    c = type.pair === 'BTC-USD' ? c : toCryptoString(c);
+    fee = toCryptoString(fee);
+    total = toCryptoString(total);
+    totalQuote = toCryptoString(totalQuote);
+    totalBase = toCryptoString(totalBase);
+
     this.props.updateInputs({
-      price: toCryptoString(a),
-      base: toCryptoString(b),
-      quote: toCryptoString(c),
-      fee: toCryptoString(fee),
-      total: toCryptoString(total),
-      totalQuoteBalance: toCryptoString(totalQuote),
-      totalBaseBalance: toCryptoString(totalBase),
+      price: a,
+      base: b,
+      quote: c,
+      fee: fee,
+      total: total,
+      totalQuoteBalance: totalQuote,
+      totalBaseBalance: totalBase,
       orderType: type.orderType,
-      transfertype: type.transferType,
+      transferType: type.transferType,
       pair: type.pair,
       [e.target.name]: e.target.value,
     })
@@ -134,7 +207,16 @@ class Form extends React.Component {
   }
 
   handleTransferType = (action, type) => {
+
     this.handleOnChange({target: { value: ''}}, {...type, transferType: action});
+  }
+
+  handleSelected = ({orderType, transferType, pair}) => {
+    this.props.initiateInputs({
+      orderType,
+      transferType,
+      pair,
+    })
   }
 
   render() {
@@ -163,17 +245,19 @@ class Form extends React.Component {
                       price: type.base,
                       quote: type.quote,
                       base: type.base,
-                      total: type.quote,
+                      total: type.pair === 'BTC-USD' ? 'BTC':type.quote,
                     }}
                     tradeType = {{
                       pair: type.pair,
                       quote: type.quote,
                       base: type.base,
                       orderType: this.props.input.orderType || 'BUY',
-                      transferType: this.props.input.tradeType || type.pair === 'BTC-USD' ? 'DEPOSIT' : 'TRADE',
+                      transferType: this.props.input.transferType || (type.pair === 'BTC-USD' ? 'DEPOSIT' : 'TRADE'),
                     }}
                     handleOnChange = { this.handleOnChange }
                     handleOrderType = { this.handleOrderType }
+                    handleTransferType = { this.handleTransferType }
+                    handleSelected = { this.handleSelected }
                   />
                 </React.Fragment>
               )
@@ -190,7 +274,7 @@ const mapStateToProps = state => {
   return ({
 
     // -- inputs -- //
-    input: state.inputs,
+    input: state.inputs, // not working atm
 
     price: state.inputs.price,
     quote: state.inputs.quote,
@@ -205,11 +289,15 @@ const mapStateToProps = state => {
     pair: state.inputs.pair,
     // -- inputs -- //
 
+    price: state.price,
     balance: state.balance.holding,
 
-    feeRate: state.mensurativeComputation.feeRate.cryptopiaFee,
+    feeRate: state.mensurativeComputation.feeRate,
     tradeType: state.tradingPairs,
   })
 }
 
-export default connect(mapStateToProps,{updateInputs})(Form);
+export default connect(mapStateToProps,{
+  updateInputs,
+  initiateInputs
+})(Form);
