@@ -28,9 +28,7 @@ const BalanceContainer = props => {
         <label> BTC balance: </label>
         <input
           name = {'btcBalance'}
-          value = { (props.type.quote === 'BTC' 
-            ? props.totalQuoteBalance
-            : props.totalBaseBalance) || props.toCryptoString(props.balance.BTC)}
+          value = { props.toCryptoString(props.balance.BTC)}
           placeholder = {'0.00000000'}
           type = "text"
           readOnly
@@ -39,9 +37,7 @@ const BalanceContainer = props => {
         <label> DOGE Balance: </label>
         <input
           name = {'dogeBalance'}
-          value = { (props.type.quote === 'DOGE' 
-          ? props.totalQuoteBalance
-          : props.totalBaseBalance) || 
+          value = { 
           props.toCryptoString(props.balance.DOGE)}
           placeholder = {'0.00000000'}
           type = "text"

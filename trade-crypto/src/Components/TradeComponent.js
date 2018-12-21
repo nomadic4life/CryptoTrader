@@ -45,7 +45,7 @@ const FormContent = styled.div`
     padding: 0 12px;
   }
 
-  .transfer-type {
+  .transaction-type {
     border: 1px solid black;
     
   }
@@ -63,7 +63,7 @@ const TradeComponent = props => {
   // console.log(typeof props.price['BTC'])
 
   // // initiate selected inputs into state input
-  // if(props.input.transferType === '') {
+  // if(props.input.transactionType === '') {
   //   props.handleSelected(props.tradeType)
   // }
 
@@ -136,18 +136,18 @@ const TradeComponent = props => {
 
         </div>
 
-        <div className='transfer-type'>
+        <div className='transaction-type'>
           <span
-            onClick={ () => props.handleTransferType('TRADE', props.tradeType)}
-            className={ `${props.tradeType.transferType === 'TRADE' ? 'selected' : 'deselected'}`}
+            onClick={ () => props.handletransactionType('TRADE', props.tradeType)}
+            className={ `${props.tradeType.transactionType === 'TRADE' ? 'selected' : 'deselected'}`}
           >TRADE</span>
           <span
-            onClick={ () => props.handleTransferType('DEPOSIT', props.tradeType)}
-            className={ props.tradeType.transferType === 'DEPOSIT' ? 'selected' : 'deselected'}
+            onClick={ () => props.handletransactionType('DEPOSIT', props.tradeType)}
+            className={ props.tradeType.transactionType === 'DEPOSIT' ? 'selected' : 'deselected'}
           >DEPOSIT</span>
           <span
-            onClick={ () => props.handleTransferType('WIDTHDRAW', props.tradeType)}
-            className={ props.tradeType.transferType === 'WIDTHDRAW' ? 'selected' : 'deselected'}
+            onClick={ () => props.handletransactionType('WIDTHDRAW', props.tradeType)}
+            className={ props.tradeType.transactionType === 'WIDTHDRAW' ? 'selected' : 'deselected'}
           >WIDTHDRAW</span>
         </div>
         {/* <div>pair btc-usd</div> */}

@@ -45,11 +45,11 @@ const FormContent = styled.div`
 class Form extends React.Component {
 
   componentDidUpdate() {
-    console.log('did update', this.props.price, this.props.input.transferType, this.props.location.pathname)
+    console.log('did update', this.props.price, this.props.input.transactionType, this.props.location.pathname)
 
     let price = this.props.location.pathname.split('-')[0].split('/')[2].toUpperCase();
 
-    if(this.props.location.pathname === '/trade/btc-usd' && this.props.input.transferType === '' && this.props.price['BTC'] > 0) {
+    if(this.props.location.pathname === '/trade/btc-usd' && this.props.input.transactionType === '' && this.props.price['BTC'] > 0) {
       console.log('yolo')
       this.props.updateInputs({
         price: this.props.price['BTC'],
@@ -60,10 +60,10 @@ class Form extends React.Component {
         totalQuoteBalance: '',
         totalBaseBalance: '',
         orderType: 'BUY',
-        transferType: 'DEPOSIT',
+        transactionType: 'DEPOSIT',
         pair: 'BTC-USD', 
       })
-    } else if(this.props.input.transferType === '') {
+    } else if(this.props.input.transactionType === '' && this.props.location.pathname !== '/trade/btc-usd') {
       console.log(this.props.price[price], this.props.toCryptoString(this.props.price[price]), price)
       this.props.updateInputs({
         price: this.props.toCryptoString(this.props.price[price]),
@@ -74,111 +74,238 @@ class Form extends React.Component {
         totalQuoteBalance: '',
         totalBaseBalance: '',
         orderType: 'BUY',
-        transferType: 'TRADE',
+        transactionType: 'TRADE',
         pair: 'BTC-USD',
       })
     }
 
     
 
-    // if(this.props.input.transferType === '') {
+    // if(this.props.input.transactionType === '') {
     //   this.handleSelected(props.tradeType)
     // }
   }
 
   handleOnChange = (e, type) => {
 
-    console.log(this.props.input.transferType)
+    // initialize variables
+    let a, b, c, total, totalQuote, totalBase, fee, {base, quote} = type , inputValue, feeRate,
+    toCryptoValue = this.props.toCryptoValue,
+    toCryptoString = this.props.toCryptoString,
+    alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZY ;:<>?`~!@#%^&*()_+=-[]{}\\|\'/,';
 
-    let alpha = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZY ;:<>?`~!@#%^&*()_+=-[]{}\\|\'/,';
-    for(let char in alpha) {
-      if(e.target.value.includes(alpha[char])) return;
-    }
+    // varify input is a number
+    // input is not read if not a number
+    for(let char in alphabet) {
+      if(e.target.value.includes(alphabet[char])) return;
+    };
 
-    // creating constraints for inputs
-    // limits decimal input to 8 digits
-    if(e === '') console.log('here');
-    else if(e.target.value.includes('.')) {
-      let demiDigit = e.target.value.split('.')[1];
-      let numDigit = e.target.value.split('.')[0];
+    // varify input is within specified size
+    if( e.target.value.includes('.') && e.target.value !== '' ) {
+
+      let demiDigit = e.target.value.split('.')[1],
+      numDigit = e.target.value.split('.')[0];
+      
+      // constraint input to 8 digits after decimal
       if(demiDigit.length > 8) return;
+
+      // constraint input to 8 digits before dcimal
       if(numDigit.length > 8) return;
-    } else {
+
+    } else if( e.target.value !== '' ) {
+
       let numDigit = e.target.value;
+
+      // constraint input to 8 digits before dcimal
       if(numDigit.length > 8) return;
+    };
+
+    // inputs varified intiate varible values
+
+
+    // varify pair
+    if( type.pair === '') return;
+
+    // deposit or widthdraw bitcoin
+    else if( type.pair === 'BTC-USD' ) {
+
+      // initiate values
+        // USD value
+      a = this.props.input.price || 0;
+
+        // BTC value
+      b = toCryptoValue(this.props.base) || 0;
+
+        // USD value
+      c = this.props.quote || 0;
+
+        // USD or BTC value
+      inputValue = e.target.value === '.' 
+      ? type.quote === 'USD' ? 0.00 : '0.00000000' : e.target.value;
+
+      // calculate quoteAmount and baseAmount
+      if(e.target.name === 'price') {
+
+        // user input to usd value
+        a = inputValue; 
+
+        // calculate base amount usd value
+        c = Math.round(Math.round(a * b) / Math.pow(10,6)) / Math.pow(10,2);
+
+        // undefined if base amount to large
+        c = c > 123456789123456789 ? undefined : c;  
+      } else if(e.target.name === 'base') {
+
+        // user input to crypto value
+        b = toCryptoValue(inputValue);
+
+        // calculate base ammount usd value
+        c = Math.round(Math.round(a * b) / Math.pow(10,6)) / Math.pow(10,2);
+
+        // undefined if base amount to large
+        c = c > 123456789123456789 ? undefined : c; 
+      } else if(e.target.name === 'quote') {
+
+        // user input to usd value
+        c = inputValue;
+
+        // calculate quote amount crypto value
+        b = Math.round(1/a * c * Math.pow(10,8));
+
+        // undefined if quote amount to large
+        b = b > 123456789123456789 ? undefined : b; 
+      }
+
+      // calculate fee Amount btc value
+      feeRate = this.props.feeRate['cryptopiaFee'];
+      fee = feeRate * b;
+      
+      // buy bitcoin // not sure if this is correct
+      if( type.transactionType === 'DEPOSIT') {
+
+        // add to balance.deposit and add to balance.capital
+        total = Math.round( b - fee );
+
+        // add to usd balance.deposit
+        totalBase = c;
+
+
+      // sell bitcoin // not sure if this is correct
+      } else if( type.transactionType === 'WIDTHDRAW') {
+
+        // subtract from btc balance.holding
+        total = Math.round( b + fee );
+
+      } else {
+        return;
+      }
+
+      // assigning correct format and usd format on price and quote
+      a = a;
+      b = toCryptoString(b);
+      c = c;
+      fee = toCryptoString(fee);
+      total = toCryptoString(total);
+      totalQuote = c;
+      totalBase = toCryptoString(total); // might be empty string and total will be used  to apply to to btc holding and deposit
+
+    } else if( type .pair !== 'BTC-USD' ) {
+
+      // initiate values
+        // crypto value
+      a = toCryptoValue(this.props.input.price) || 0;
+
+        // crypto value
+      b = toCryptoValue(this.props.base) || 0;
+
+        // crypto value
+      c = toCryptoValue(this.props.quote) || 0;
+
+        // crypto value
+      inputValue = e.target.value === '.' ? '0.00000000' : e.target.value;
+
+      
+      // varify to trade only 
+      if( type.transactionType === 'TRADE' ) {
+
+        // calculate quoteAmount and baseAmount
+        if(e.target.name === 'price') {
+  
+          // user input to crypto value
+          a = toCryptoValue(inputValue); 
+  
+          // calculate base crypto value
+          c = Math.round(Math.round(a * b) / Math.pow(10,8));
+  
+          // undefined if base amount to large
+          c = c > 123456789123456789 ? undefined : c;  
+        } else if(e.target.name === 'base') {
+  
+          // user input to crypto value
+          b = toCryptoValue(inputValue);
+          
+          // calculate base crypto value
+          c = Math.round(Math.round(a * b) / Math.pow(10,8));
+  
+          // undefined if base amount to large
+          c = c > 123456789123456789 ? undefined : c; 
+        } else if(e.target.name === 'quote') {
+  
+          // user input to crypto value
+          c = toCryptoValue(inputValue);
+          
+          // calculate quote crypto value
+          b = Math.round(1/a * c * Math.pow(10,8));
+  
+          // undefined if quote amount to large
+          b = b > 123456789123456789 ? undefined : b; 
+        }
+  
+        // calculate fee Amount crypto value
+        feeRate = this.props.feeRate['cryptopiaFee'];
+        fee = feeRate * c;
+
+        // buy crypto asset // calculate total, quote balance, and base balance
+        if( type.orderType === 'BUY' ) {
+
+          // applied fee total of base
+          total = Math.round( c + fee );
+
+          // subtracted preview of balance.holding quote
+          totalQuote = this.props.balance[quote] - total || this.props.balance[quote];
+
+          // added preview of balance.holding base
+          totalBase = this.props.balance[base] + b || this.props.balance[base];
+
+        // sell crypto asset
+        } else if( type.orderType === 'SELL') {
+
+          // applied fee total of base
+          total = Math.round( c - fee );
+
+          // subtracted preview of balance.holding base
+          totalBase = this.props.balance[base] - b;  
+          
+          // added preview of balance.holding quote
+          totalQuote = this.props.balance[quote] + Math.round( c - fee );
+        }
+
+        // assigning correct format
+        a = toCryptoString(a);
+        b = toCryptoString(b);
+        c = toCryptoString(c);
+        fee = toCryptoString(fee);
+        total = toCryptoString(total);
+        totalQuote = toCryptoString(totalQuote);
+        totalBase = toCryptoString(totalBase);
+
+      } else {
+        return;
+      }
+      console.log('something');
     }
 
-    let a,b,c;
-    let inputValue = e.target.value === '.' ? '0.00000000' : e.target.value;
-    let total, totalQuote, totalBase, fee, base, quote
-    let toCryptoValue = this.props.toCryptoValue;
-    let toCryptoString = this.props.toCryptoString;
-
-    a = toCryptoValue(this.props.price) || 0;
-    b = toCryptoValue(this.props.base) || 0;
-    c = toCryptoValue(this.props.quote) || 0;
-
-    if(type.pair === 'BTC-USD') {
-      console.log('here', this.props.price['BTC'])
-      a = this.props.price['BTC'];
-      c = this.props.base;
-    }
-
-    if(e.target.name === 'price') {
-
-      a = toCryptoValue(inputValue); 
-      c = Math.round(Math.round(a * b) / Math.pow(10,8));
-      c = c > 123456789123456789 ? undefined : c;  
-    } else if(e.target.name === 'base') {
-
-      b = toCryptoValue(inputValue);
-      c = Math.round(Math.round(a * b) / Math.pow(10,8));
-      c = c > 123456789123456789 ? undefined : c; 
-    } else if(e.target.name === 'quote') {
-
-      c = type.pair === 'BTC-USD' ? inputValue: toCryptoValue(inputValue);
-      b = Math.round(1/a * c * Math.pow(10,8));
-      b = b > 123456789123456789 ? undefined : b; 
-    }
-    let feeRate = this.props.feeRate['cryptopiaFee'];
-    console.log(feeRate)
-    fee = type.pair === 'BTC-USD' ? feeRate * b : feeRate * c;
-    base = type.base;
-    quote = type.quote;
-
-    if(type.orderType === 'SELL' && type.pair !== 'BTC-USD'){
-      total = Math.round( c - fee );
-      totalQuote = this.props.balance[quote] + Math.round( c - fee );
-      totalBase = this.props.balance[base] - b;
-    } else if(type.pair !== 'BTC-USD') {
-      total = Math.round( c + fee );
-      totalQuote = this.props.balance[quote] - Math.round( c + fee ) || this.props.balance[quote];
-      totalBase = this.props.balance[base] + b || this.props.balance[base];
-    }
-
-    console.log(type.orderType, type.pair)
-    if(type.orderType === 'SELL' && type.pair === 'BTC-USD'){
-      console.log('seeling here')
-      total = Math.round( b + fee );
-      totalQuote = this.props.balance[quote] + Math.round( b + fee );
-      totalBase = this.props.balance[base] - c;
-    } else if(type.pair === 'BTC-USD') {
-      console.log('buying here')
-      total = Math.round( b - fee );
-      totalQuote = 0;
-      totalBase = this.props.balance['BTC'] + total || this.props.balance['BTC'];
-    }
-
-    console.log(a,b,c)
-
-    a = type.pair === 'BTC-USD' ? a : toCryptoString(a);
-    b = toCryptoString(b);
-    c = type.pair === 'BTC-USD' ? c : toCryptoString(c);
-    fee = toCryptoString(fee);
-    total = toCryptoString(total);
-    totalQuote = toCryptoString(totalQuote);
-    totalBase = toCryptoString(totalBase);
-
+    // update inputs
     this.props.updateInputs({
       price: a,
       base: b,
@@ -188,7 +315,7 @@ class Form extends React.Component {
       totalQuoteBalance: totalQuote,
       totalBaseBalance: totalBase,
       orderType: type.orderType,
-      transferType: type.transferType,
+      transactionType: type.transactionType,
       pair: type.pair,
       [e.target.name]: e.target.value,
     })
@@ -206,15 +333,15 @@ class Form extends React.Component {
     this.handleOnChange({target: { value: ''}}, {...type, orderType: action})
   }
 
-  handleTransferType = (action, type) => {
+  handletransactionType = (action, type) => {
 
-    this.handleOnChange({target: { value: ''}}, {...type, transferType: action});
+    this.handleOnChange({target: { value: ''}}, {...type, transactionType: action});
   }
 
-  handleSelected = ({orderType, transferType, pair}) => {
+  handleSelected = ({orderType, transactionType, pair}) => {
     this.props.initiateInputs({
       orderType,
-      transferType,
+      transactionType,
       pair,
     })
   }
@@ -252,11 +379,11 @@ class Form extends React.Component {
                       quote: type.quote,
                       base: type.base,
                       orderType: this.props.input.orderType || 'BUY',
-                      transferType: this.props.input.transferType || (type.pair === 'BTC-USD' ? 'DEPOSIT' : 'TRADE'),
+                      transactionType: this.props.input.transactionType || (type.pair === 'BTC-USD' ? 'DEPOSIT' : 'TRADE'),
                     }}
                     handleOnChange = { this.handleOnChange }
                     handleOrderType = { this.handleOrderType }
-                    handleTransferType = { this.handleTransferType }
+                    handletransactionType = { this.handletransactionType }
                     handleSelected = { this.handleSelected }
                   />
                 </React.Fragment>
@@ -285,7 +412,7 @@ const mapStateToProps = state => {
     totalQuoteBalance: state.inputs.totalQuoteBalance,
     totalBaseBalance: state.inputs.totalBaseBalance,
     orderType: state.inputs.orderType,
-    transferType: state.inputs.transferType,
+    transactionType: state.inputs.transactionType,
     pair: state.inputs.pair,
     // -- inputs -- //
 

@@ -13,33 +13,38 @@
 // Initial state
 const initialState = {
   balance: {
-    deposits: {
+    deposits: {     // Might go in account stats
       USD: 0,       // total accumulated deposits
-      BTCValue: 0,  // value of usd deposits in btc at time of deposit might not need
+      BTC: 0,       // value of usd deposits in btc at time of deposit
     },
     capital: {
-      USD: 0,     // usd balance not needed here for testing might remove
-      BTC: 0,     // btc capital source from deposits
-      DOGE: 0,    // might not need
-    },
-    capitalValue: {
-      USD: 0,     // btc capital source in usd value
-      BTC: 0,     // value of usd deposits in btc at time of deposit
+      BTC: 0,       // btc capital source from deposits
+      DOGE: 0,      // might not need
     },
     holding: {
-      USD: 45,     // btc capital source in usd value maybe... could be for something else
+      USD: 0,       // current USD holding in balance
       BTC: 10000000,     // btc balance from sells - trades
-      DOGE: 0,    // doge balance from buys - trades
+      DOGE: 0,      // doge balance from buys - trades
     },
-    value: {
-      USD: 0,     // btc capital source + btc balance total
-      BTC: 0,     // btc capital source + btc balance total in usde value
+    valuation: {
+      USD: 0,       // btc valuation in USD value
+      BTC: 0,       // btc capital source +  btc holding + all crypto holding in btc value total in usd value
+    },
+    pairValuation: {
+      'BTC-USD': 0, // BTC holding + DOGE holding in btc value
     },
     proceeds: {
-      earnings: 0,
+      earnings: 0,  //  btc valuation - btc deposit
       earningsRatio: 0,
-      yeild: 0,
+      yeild: 0,     //  earnings / btc deposit * 100
     },
+
+    accountStats: {
+      current_order_id: 0,
+      totalInvested: {  // in btc value, investement are buy orders from capital btc
+        doge: 0,        // total invested in btc value from capital to holding
+      }
+    }, // will add info
     // btcCaptialBalance: 0, // btc capital source from deposits
     // usdValueCapitalBalance: 0, // btc capital source in usd value
     // btcBalance: 10000000, // btc balance from sells
@@ -63,7 +68,7 @@ const initialState = {
     totalBaseBalance: '',
     // selection choices
     orderType: '', // buy || sell
-    transferType: '', // trade || deposit || widthdraw
+    transactionType: '', // trade || deposit || widthdraw
     pair: '', 
     // isSelling: false, // might not need this property if have orderType
   },
@@ -85,12 +90,16 @@ const initialState = {
       pair: 'DOGE-BTC', // base-quote
       quote: 'BTC', // amount
       base: 'DOGE', // quantity
+      metadata: {
+        totalInvested: 0,
+      },
     },
     {
       id: 1,
       pair: 'BTC-USD',
       quote: 'USD', // amount
       base: 'BTC',  // quantity
+      metadata: {},
     },
   ],
   error: null,
@@ -104,7 +113,7 @@ const initialState = {
       fee: 0,
       total: 0,
       tradeType: 'buy', // buy || sell
-      transferType: 'deposit', // deposit || widthdraw || trade
+      transactionType: 'deposit', // deposit || widthdraw || trade
       pair: 'BTC-USD', // base-quote string
       metadata: { // need think about what will be part of metadata
         buyRecord: 0,
@@ -185,12 +194,12 @@ export const cryptoReducer = (state = initialState, action) => {
         },
       })
 
-      // case 'UPDATE_TRANSFER_TYPE':
+      // case 'UPDATE_transaction_TYPE':
       //   return ({
       //     ...state,
       //     inputs: {
       //       ...state.inputs,
-      //       transferType: action.payload.transferType,
+      //       transactionType: action.payload.transactionType,
       //     }
       //   })
 
@@ -217,7 +226,7 @@ export const cryptoReducer = (state = initialState, action) => {
             totalQuoteBalance: action.payload.totalQuoteBalance,
             totalBaseBalance: action.payload.totalBaseBalance,
             orderType: action.payload.orderType,
-            transferType: action.payload.transferType,
+            transactionType: action.payload.transactionType,
             pair: action.payload.pair, 
           }
         })
