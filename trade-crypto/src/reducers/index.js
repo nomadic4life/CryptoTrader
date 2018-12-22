@@ -169,6 +169,19 @@ export const cryptoReducer = (state = initialState, action) => {
         error: action.payload,
       })
 
+    case 'UPDATE_CRYPTO_BALANCE':
+      return ({
+        ...state,
+        balance: {
+          ...state.balance,
+          holding: {
+            ...state.balance.holding,
+            [action.payload.quoteLabel]: action.payload.holdingQuote,
+            [action.payload.baseLabel]: action.payload.holdingBase,
+          }
+        }
+      })
+
     case 'UPDATE_DOGE':
       return ({
         ...state,
@@ -180,18 +193,18 @@ export const cryptoReducer = (state = initialState, action) => {
             DOGE: action.payload.totalBaseBalance,
           },
         },
-        price: {
-          ...state.price,
-          DOGE: action.payload.price,
-        },
-        base: {
-          ...state.quantity,
-          DOGE: action.payload.base,
-        },
-        quote: {
-          ...state.amount,
-          BTC: action.payload.quote,
-        },
+        // price: {
+        //   ...state.price,
+        //   DOGE: action.payload.price,
+        // },
+        // base: {
+        //   ...state.quantity,
+        //   DOGE: action.payload.base,
+        // },
+        // quote: {
+        //   ...state.amount,
+        //   BTC: action.payload.quote,
+        // },
       })
 
       // case 'UPDATE_transaction_TYPE':

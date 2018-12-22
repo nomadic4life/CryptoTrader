@@ -45,6 +45,7 @@ const FormContent = styled.div`
 class Form extends React.Component {
 
   componentDidUpdate() {
+    // considering to refactor
     console.log('did update', this.props.price, this.props.input.transactionType, this.props.location.pathname)
 
     let price = this.props.location.pathname.split('-')[0].split('/')[2].toUpperCase();
@@ -89,7 +90,7 @@ class Form extends React.Component {
   handleOnChange = (e, type) => {
 
     // initialize variables
-    let a, b, c, total, totalQuote, totalBase, fee, {base, quote} = type , inputValue, feeRate,
+    let a, b, c, total, totalQuote, totalBase, fee, {base, quote} = type , inputValue, feeRate, orderType,
     toCryptoValue = this.props.toCryptoValue,
     toCryptoString = this.props.toCryptoString,
     alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZY ;:<>?`~!@#%^&*()_+=-[]{}\\|\'/,';
@@ -208,6 +209,7 @@ class Form extends React.Component {
       total = toCryptoString(total);
       totalQuote = c;
       totalBase = toCryptoString(total); // might be empty string and total will be used  to apply to to btc holding and deposit
+      orderType = type.transactionType === 'DEPOSIT' ? 'BUY' : 'SELL';
 
     } else if( type .pair !== 'BTC-USD' ) {
 
@@ -298,11 +300,12 @@ class Form extends React.Component {
         total = toCryptoString(total);
         totalQuote = toCryptoString(totalQuote);
         totalBase = toCryptoString(totalBase);
+        orderType = type.orderType;
 
       } else {
         return;
       }
-      console.log('something');
+
     }
 
     // update inputs
@@ -314,7 +317,7 @@ class Form extends React.Component {
       total: total,
       totalQuoteBalance: totalQuote,
       totalBaseBalance: totalBase,
-      orderType: type.orderType,
+      orderType: orderType,
       transactionType: type.transactionType,
       pair: type.pair,
       [e.target.name]: e.target.value,

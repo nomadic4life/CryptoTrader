@@ -8,6 +8,11 @@ export const updateState = cryptoData => {
   }
 }
 
+export const updateBalance = cryptoData => {
+  console.log(cryptoData)
+  return { type: 'UPDATE_CRYPTO_BALANCE', payload: cryptoData };
+}
+
 export const initiateInputs = cryptoInputs => {
   return { type: 'INIT_INPUTS', payload: cryptoInputs };
 }

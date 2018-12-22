@@ -4,7 +4,7 @@ import Display from './Components/Display'
 import { Route } from 'react-router-dom';
 import './App.css';
 import { connect } from 'react-redux';
-import { updateState, updateInputs, fetchPrice } from './actions';
+import { updateState, updateInputs, fetchPrice, updateBalance } from './actions';
 
 
 class App extends Component {
@@ -13,7 +13,8 @@ class App extends Component {
     this.props.fetchPrice()
   }
 
-  handleOnSubmit = ({price, base, quote, totalBaseBalance, totalQuoteBalance}, tradeType) => {
+  handleOnSubmit = ({price, base, quote, total, totalBaseBalance, totalQuoteBalance}, {pair, orderType, transactionType, base: baseLabel, quote: quoteLabel}) => {
+    let toCryptoValue = this.toCryptoValue;
 
     if((price === 'undefined' || base === 'undefined' || quote === 'undefined') || totalQuoteBalance === '' || totalBaseBalance === '') {
 
@@ -22,14 +23,73 @@ class App extends Component {
 
     } else {
 
-      this.props.updateState({
-        type: tradeType.pair,
-        price:  this.toCryptoValue(price),
-        base: this.toCryptoValue(base),
-        quote: this.toCryptoValue(quote),
-        totalQuoteBalance: this.toCryptoValue(totalQuoteBalance),
-        totalBaseBalance: this.toCryptoValue(totalBaseBalance),
-      })
+      if(pair === 'BTC-USD') {
+
+        if(orderType === 'BUY') {
+
+          this.props.updateBalance({
+            orderType: 'BTC-USD',
+            orderType: 'BUY',
+            transactionType: 'DEPOSIT',
+            quoteLabel: 'USD',
+            baseLabel: 'BTC',
+            depositQuote: this.props.balance.deposit['USD'] + quote,
+            depositBase: this.props.balance.deposit['BTC'] + toCryptoValue(total),
+            capitalQuote: this.props.balance.capital['USD'] + quote,
+            capitalBase: this.props.balance.capital['BTC'] + toCryptoValue(total),
+          });
+
+        } else if(orderType === 'SELL' && this.props.balance.holding['BTC'] >=toCryptoValue(total)) { 
+
+          this.props.updateBalance({
+            orderType: 'BTC-USD',
+            orderType: 'SELL',
+            transactionType: 'WIDTHDRAW',
+            quoteLabel: 'USD',
+            baseLabel: 'BTC',
+            holdingBase: this.props.balance.holding['BTC'] - toCryptoValue(total),
+          });
+        }
+
+      }else if(pair !== 'BTC-USD') {
+
+        if(orderType === 'BUY' && (this.props.balance.capital[quoteLabel] >= toCryptoValue(total) || this.props.balance.holding[quoteLabel] >= toCryptoValue(total)) ) { 
+
+          console.log('in here testing', this.props.balance.holding[baseLabel] + toCryptoValue(base))
+
+          this.props.updateBalance({
+            orderType: pair,
+            orderType: 'BUY',
+            transactionType: 'TRADE',
+            quoteLabel,
+            baseLabel,
+            holdingQuote: this.props.balance.holding[quoteLabel] - toCryptoValue(total),
+            holdingBase: this.props.balance.holding[baseLabel] + toCryptoValue(base),
+          });  
+
+        } else if(orderType === 'SELL' &&  this.props.balance.holding[baseLabel] >= toCryptoValue(base)) {  
+
+          this.props.updateBalance({
+            orderType: pair,
+            orderType: 'SELL',
+            transactionType: 'TRADE',
+            quoteLabel,
+            baseLabel,
+            holdingBase: this.props.balance.holding[baseLabel] - toCryptoValue(base),
+            holdingQuote: this.props.balance.holding[quoteLabel] + toCryptoValue(total),
+          }); 
+
+        }
+      }
+
+      // this.props.updateState({
+      //   type: pair,
+      //   price:  this.toCryptoValue(price),
+      //   base: this.toCryptoValue(base),
+      //   quote: this.toCryptoValue(quote),
+      //   totalQuoteBalance: this.toCryptoValue(totalQuoteBalance),
+      //   totalBaseBalance: this.toCryptoValue(totalBaseBalance),
+      // })
 
     }
     
@@ -144,11 +204,12 @@ class App extends Component {
 
 const mapStatetoProps = state => {
   return {
-    // price : state.price.doge,
-    base: state.base.DOGE,
-    quote: state.quote.BTC,
-    doge: state.price.DOGE,
-    btc: state.price.BTC,
+    price : state.price,
+    balance: state.balance,
+    base: state.base.DOGE, // not needed just for testing
+    quote: state.quote.BTC, // not needed just for testing
+    doge: state.price.DOGE, // will not need later on
+    btc: state.price.BTC,   // will not need later on
   }
 }
 
@@ -156,4 +217,5 @@ export default connect(mapStatetoProps, {
   updateState,
   updateInputs,
   fetchPrice,
+  updateBalance,
 })(App);
