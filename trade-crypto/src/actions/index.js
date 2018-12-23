@@ -10,7 +10,16 @@ export const updateState = cryptoData => {
 
 export const updateBalance = cryptoData => {
   console.log(cryptoData)
-  return { type: 'UPDATE_CRYPTO_BALANCE', payload: cryptoData };
+  if(cryptoData.transactionType === 'DEPOSIT') {
+
+    return { type: 'UPDATE_DEPOSIT_BALANCE', payload: cryptoData };
+  } else if(cryptoData.transactionType === 'WIDTHDRAW') {
+
+    return { type: 'UPDATE_WIDTHDRAW_BALANCE', payload: cryptoData };
+  } else if(cryptoData.transactionType === 'TRADE') {
+
+    return { type: 'UPDATE_TRADE_BALANCE', payload: cryptoData };
+  }
 }
 
 export const initiateInputs = cryptoInputs => {

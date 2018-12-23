@@ -112,3 +112,100 @@ if( typePair === 'BTC-USD' ) {
 
 'DOGE-BTC'
   trade = buy || sell
+
+
+  if(buyOrderFilled){
+    totalBuys = totalBuys + 1;
+  }
+
+const sellAlgorithm = () => {
+  let isInsulficiant = false;
+
+  if(sellOrderFilled) {
+
+    totalSells = totalSells + 1;
+
+    if(totalBuys - totalSells <= 2 && totalBuys - totalSells >= 0) {
+      let sellHalf = ( lastBuy[totalBuys - totalSells].quote / minimumQuote >= 2 && lastBuy[totalBuys - totalSells].quote <= 4 ); // need rename
+
+      // different kind of algorithm for selling
+      if(totalBuys - totalSells === 2) {
+
+        if( sellHalf && totalSells === 1 ) {
+
+          // sell half quote@lastBuyOrder[totalBuys - totalSells]
+          quoteAmount = ( minimumQuote * lastBuy[totalBuys - totalSells].quote / minimumQuote );
+          baseAmount = ( 1 / currentPrice * quoteAmount );
+        } 
+
+      } else if(totalBuys - totalSells === 1) {
+
+        if( sellHalf && totalSells === 1 ) {
+
+          // sell half quote@lastBuyOrder[totalBuys - totalSells]
+          quoteAmount = ( minimumQuote * lastBuy[totalBuys - totalSells].quote / minimumQuote );
+          baseAmount = ( 1 / currentPrice * quoteAmount );
+        }else  if( sellHalf && totalSells === 2 ) {
+
+          quoteAmount = ( minimumQuote * lastBuy[totalBuys - totalSells].quote / minimumQuote ) + ( minimumQuote * lastBuy[totalBuys - totalSells + 1].quote / minimumQuote ) / 2;
+          baseAmount = ( 1 / currentPrice * quoteAmount );
+        }
+
+      } else  if(totalBuys - totalSells === 0) {
+
+        if( sellHalf && totalSells === 1 ) {
+
+          // sell half quote@lastBuyOrder[totalBuys - totalSells]
+          quoteAmount = ( minimumQuote * lastBuy[totalBuys - totalSells].quote / minimumQuote );
+          baseAmount = ( 1 / currentPrice * baseAmount );
+        }else if( sellHalf && totalSells === 2 ) {
+
+          quoteAmount = ( minimumQuote * lastBuy[totalBuys - totalSells].quote / minimumQuote ) + ( minimumQuote * lastBuy[totalBuys - totalSells + 1].quote / minimumQuote ) / 2;
+          baseAmount = ( 1 / currentPrice * quoteAmount );
+        }else if( sellHalf && totalSells === 3 ) {
+
+          quoteAmount = ( minimumQuote * lastBuy[totalBuys - totalSells].quote / minimumQuote ) + (( minimumQuote * lastBuy[totalBuys - totalSells + 1].quote / minimumQuote ) / 2) + (( minimumQuote * lastBuy[totalBuys - totalSells + 2].quote / minimumQuote ) / 2);
+          baseAmount = ( 1 / currentPrice * quoteAmount );
+        }
+
+      }
+
+    }else if(totalBuys - totalSells > 2) {
+
+      // different kind of algorithm for selling
+      if( lastBuy[totalBuys - totalSells].quote / minimumQuote <= 2 && lastBuy[totalBuys - totalSells].quote >= 1 ) {
+
+        // sell minimumQuote
+        baseAmount = (1 / currentPrice * minimumQuote);
+        quoteAmount = minimumQuote;
+      } else if( lastBuy[totalBuys - totalSells].quote / minimumQuote >= 2 && lastBuy[totalBuys - totalSells].quote <= 4 ) {
+
+        // sell half quote@lastBuyOrder[totalBuys - totalSells]
+        baseAmount = ( 1 / currentPrice * ( minimumQuote * lastBuy[totalBuys - totalSells].quote / minimumQuote ) );
+        quoteAmount = ( minimumQuote *  2 );
+      }
+    }
+
+    return { baseAmount, quoteAmount, isInsulficiant }    
+  } else return { isInsulficiant: true };
+
+}
+
+let { baseAmount, quoteAmount, isInsulficiant } = sellAlgorithm();
+if(isInsulficiant) {
+
+  // something here
+} else {
+
+  // update last sell
+  lastSell[totalSells] = {
+    quote: quoteAmount,
+    base: baseAmount,
+  }
+
+  // updating balance
+  balance[base] = balance[base] - baseAmount;
+  balance[quote] = balance[quote] + quoteAmount;
+}
+
+

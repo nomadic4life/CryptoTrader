@@ -13,7 +13,7 @@ class App extends Component {
     this.props.fetchPrice()
   }
 
-  handleOnSubmit = ({price, base, quote, total, totalBaseBalance, totalQuoteBalance}, {pair, orderType, transactionType, base: baseLabel, quote: quoteLabel}) => {
+  handleOnSubmit = ({price, base, quote, fee,total, totalBaseBalance, totalQuoteBalance}, {pair, orderType, transactionType, base: baseLabel, quote: quoteLabel}) => {
     let toCryptoValue = this.toCryptoValue;
 
     if((price === 'undefined' || base === 'undefined' || quote === 'undefined') || totalQuoteBalance === '' || totalBaseBalance === '') {
@@ -28,13 +28,13 @@ class App extends Component {
         if(orderType === 'BUY') {
 
           this.props.updateBalance({
-            orderType: 'BTC-USD',
+            pair: 'BTC-USD',
             orderType: 'BUY',
             transactionType: 'DEPOSIT',
             quoteLabel: 'USD',
             baseLabel: 'BTC',
-            depositQuote: this.props.balance.deposit['USD'] + quote,
-            depositBase: this.props.balance.deposit['BTC'] + toCryptoValue(total),
+            depositQuote: this.props.balance.deposits['USD'] + quote,
+            depositBase: this.props.balance.deposits['BTC'] + toCryptoValue(total),
             capitalQuote: this.props.balance.capital['USD'] + quote,
             capitalBase: this.props.balance.capital['BTC'] + toCryptoValue(total),
           });
@@ -42,7 +42,7 @@ class App extends Component {
         } else if(orderType === 'SELL' && this.props.balance.holding['BTC'] >=toCryptoValue(total)) { 
 
           this.props.updateBalance({
-            orderType: 'BTC-USD',
+            pair: 'BTC-USD',
             orderType: 'SELL',
             transactionType: 'WIDTHDRAW',
             quoteLabel: 'USD',
@@ -58,7 +58,7 @@ class App extends Component {
           console.log('in here testing', this.props.balance.holding[baseLabel] + toCryptoValue(base))
 
           this.props.updateBalance({
-            orderType: pair,
+            pair: pair,
             orderType: 'BUY',
             transactionType: 'TRADE',
             quoteLabel,
@@ -70,7 +70,7 @@ class App extends Component {
         } else if(orderType === 'SELL' &&  this.props.balance.holding[baseLabel] >= toCryptoValue(base)) {  
 
           this.props.updateBalance({
-            orderType: pair,
+            pair: pair,
             orderType: 'SELL',
             transactionType: 'TRADE',
             quoteLabel,
@@ -92,19 +92,40 @@ class App extends Component {
       // })
 
     }
-    
 
+    // update Ledger
+    this.props.updateLedger({
+      date: Date.now(),
+      price: toCryptoValue(price), // if usd then should be toDollarValue(price)
+      quote: toCryptoValue(quote),
+      base: toCryptoValue(base),
+      fee: toCryptoValue(fee),
+      total: toCryptoValue(total),
+      orderType,
+      transactionType,
+      pair,
+      metadata: {
+        buyRecord: 0,
+        sellRecord: 0,
+        lastHigh: 0, // highest sell
+        lastLow: 0,  // lowest buy
+        totalValue: 0,
+
+      }
+    })
+    
+    // clear Inputs
     this.props.updateInputs({
-      price: '',
+      price: price,
       base: '',
       quote: '',
       fee: '',
       total: '',
       totalQuoteBalance: '',
       totalBaseBalance: '',
-      orderType: '',
-      transferType: '',
-      pair: '',
+      orderType: orderType,
+      transactionType: transactionType,
+      pair: pair,
     })
   }
 

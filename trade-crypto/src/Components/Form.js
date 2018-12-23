@@ -202,16 +202,16 @@ class Form extends React.Component {
       }
 
       // assigning correct format and usd format on price and quote
-      a = a;
+      // a = a; // to usd string
       b = toCryptoString(b);
-      c = c;
+      // c = c; // to usd string
       fee = toCryptoString(fee);
       total = toCryptoString(total);
-      totalQuote = c;
+      totalQuote = c; // to usd string
       totalBase = toCryptoString(total); // might be empty string and total will be used  to apply to to btc holding and deposit
       orderType = type.transactionType === 'DEPOSIT' ? 'BUY' : 'SELL';
 
-    } else if( type .pair !== 'BTC-USD' ) {
+    } else if( type.pair !== 'BTC-USD' ) {
 
       // initiate values
         // crypto value
@@ -326,14 +326,22 @@ class Form extends React.Component {
   } // handleOnChange(e)
 
   handleOrderType = (action, type) => {
-    
+    let transactionType = type.transactionType;
+
     if(action === 'BUY') {
       action = 'SELL';
+      
     } else if(action === 'SELL') {
       action = 'BUY';
     }
 
-    this.handleOnChange({target: { value: ''}}, {...type, orderType: action})
+    if(type.transactionType === 'DEPOSIT') {
+      transactionType = 'WIDTHDRAW';
+    } else if(transactionType === 'WIDTHDRAW') {
+      transactionType = 'DEPOSIT';
+    }
+
+    this.handleOnChange({target: { value: ''}}, {...type, orderType: action, transactionType: transactionType})
   }
 
   handletransactionType = (action, type) => {
@@ -406,7 +414,7 @@ const mapStateToProps = state => {
     // -- inputs -- //
     input: state.inputs, // not working atm
 
-    price: state.inputs.price,
+    // price: state.inputs.price,
     quote: state.inputs.quote,
     base: state.inputs.base,
 
