@@ -1,4 +1,4 @@
-const cryptoContainer = () => {
+const cryptoCache = () => { // crypto asset markets
 
   const crypto = {
     minimumCapital: null, // don't think I need this
@@ -29,41 +29,104 @@ const cryptoContainer = () => {
     buyRate: [], // for buying algorithm will not need, not using atm
 
     status: {
+      market: '', // trading pair, base-quote, DOGE-BTC
+      maxDays: 0,
       orderStatus: '',
       tradeCount: 0,
       buyTotal: 0,
       sellTotal: 0,
-      insulficiantCount: 0,
+      insufficientCount: 0,
       consecutiveBuyCount: 0,
       consecutiveSellCount: 0,
       totalBuyAmount: 0,
       totalSellAmount: 0,
+      totalAmount: 0,
       lastBuyPrice: 0,
+      dayCount: 0, // going to be used to update trading algorithm every 30 days
       last_buy: [],
       last_sell: [],
-      dayCount: 0,
       init: {},
     },
 
     ledger: [],
 
-    displayAccount({ price, baseBalance, quoteBalance, earnings, yeildToDate, ledger, status, actionType }) {
+    toCryptoString(num) {
+
+      if(num === undefined) return "undefined";
       
-      // will add formating to crypto values and dollar values
+  
+      // if(typeof num === 'string' && num === '') num = this.toCryptoValue(num || '0.00000000');
+  
+      // if(typeof num !== 'number') return `${num} is not a number`;
+    
+      let value;
+      num = Math.round(num);
+    
+      if(num >= 0) {
+    
+        num = num.toString();
+    
+        value = num.length <= 8 
+          ? '0.' + '0'.repeat(8 - num.length) + num 
+          : `${num.slice(0,-8)}.${num.slice(-8)}`;
+    
+      } else {
+    
+        num = Math.abs(num).toString();
+        
+        value = num.length <= 8 
+          ? '-0.' + '0'.repeat(8 - num.length) + num 
+          : `-${num.slice(0,-8)}.${num.slice(-8)}`;
+      }
+    
+      return value;
+    },
+
+    displayAccount({ price, capitalBalance, baseBalance, quoteBalance, totalInvested, earnings, yeildToDate, ledger, status, actionType, toCryptoString }) {
+
+      let base = status.market.split('-')[0], quote = status.market.split('-')[1],
+      lastTrade = ledger.length > 0 ? ledger[ledger.length-1] : 0;
+      
+      // will add formating to dollar values
       return {
-        price,
-        baseBalance,
-        quoteBalance,
-        earnings,
-        yeildToDate,
-        lastTrade: ledger[ledger.length-1],
-        status,
-        actionType,
+        'Price Action': actionType.toLowerCase(), // thinking of giving better property name
+        'Last Price': toCryptoString(price),
+        [`Capital Balance`]: toCryptoString(capitalBalance),
+        [`${base} Balance`]: toCryptoString(baseBalance),
+        [`${quote} Balance`]: toCryptoString(quoteBalance),
+        'Total Invested': toCryptoString(totalInvested),
+        'Total Earnings': toCryptoString(earnings),
+        'Yield To Date': `${yeildToDate}%`,
+        'Last Trade': {
+          ...lastTrade,
+          price: toCryptoString(lastTrade.price),
+          quote: toCryptoString(lastTrade.quote),
+          base: toCryptoString(lastTrade.base),
+          fee: toCryptoString(lastTrade.fee),
+          total: toCryptoString(lastTrade.total),
+        },
+        'Account Stats': {
+          ...status,
+          init: {
+            price: toCryptoString(status.init.price),
+            btcPrice: status.init.btcPrice,
+            startingCapital: toCryptoString(status.init.startingCapital),
+            quoteAmount: toCryptoString(status.init.quoteAmount),
+            baseAmount: toCryptoString(status.init.baseAmount),
+            fee: toCryptoString(status.init.fee),
+            total: toCryptoString(status.init.total),
+          }
+        },
       };
+
+    },
+
+    retrive() {
+      return this.displayAccount(this);
     },
 
     buy({price, minimumQuote, factor, feeRate, baseBalance, capitalBalance, quoteBalance}) {
-      let quote, base, fee, total, baseValue, insulficiant = false;
+      let quote, base, fee, total, baseValue, insufficient = false;
 
       // calculate quote
       quote = Math.round(minimumQuote * factor);
@@ -82,19 +145,19 @@ const cryptoContainer = () => {
 
       // check capitalBalance first then quoteBalance for suficiant funds
       // && current price = last buy price then no trade is executed
-      insulficiant = ( capitalBalance >= total || quoteBalance >= total ) &&  price !== this.status.lastBuyPrice ? false : true;
+      insufficient = ( capitalBalance >= total || quoteBalance >= total ) &&  price !== this.status.lastBuyPrice ? false : true;
 
       // for testing
-      console.log(quote, base, fee , total, insulficiant, price - this.status.lastBuyPrice, this.status.last_buy);
+      // console.log(quote, base, fee , total, insufficient, price - this.status.lastBuyPrice, this.status.last_buy);
 
-      return { quote, base, fee, total, insulficiant };
+      return { quote, base, fee, total, insufficient };
     },
 
     sell({price, minimumQuote, factor, baseBalance, feeRate}) {
-      let quote, base, fee, total, baseValue, insulficiant = false;
+      let quote, base, fee, total, baseValue, insufficient = false;
 
       function algorithmSell({ price, minimumQuote, factor, feeRate }) {
-        let quote, base, fee, total, baseValue, insulficiant = false;
+        let quote, base, fee, total, baseValue, insufficient = false;
 
         // calculate quote
         quote = Math.round( minimumQuote * factor );
@@ -128,66 +191,103 @@ const cryptoContainer = () => {
       // baseBalance in quote value with fee applied
       baseValue = ( Math.round(baseBalance * price / Math.pow(10,8)) - Math.round(baseBalance * price * feeRate / Math.pow(10,8)) );
 
-      // if funds insulficiant will not sell
-      insulficiant = minimumQuote >= total && baseValue >= total ? true : false;
+      // if funds insufficient will not sell
+      insufficient = minimumQuote >= total && baseValue >= total ? true : false;
 
       // meet condition to sell price >= last buy price + 2
-      insulficiant = price >= this.status.lastBuyPrice + 2 ? false : true;
+      insufficient = price >= this.status.lastBuyPrice + 2 ? false : true;
 
       // for testing
-      console.log(quote, total, base,fee);
+      // console.log(quote, total, base,fee);
 
-      return { quote, base, fee, total, baseValue, insulficiant }
+      return { quote, base, fee, total, baseValue, insufficient }
+    },
+
+    antedate() {
+
+      // increase day count
+      this.status.dayCount++
+
+      // check to make new deposit
+      if(this.status.dayCount % 30 === 0 ) {
+
+        // price action to deposit
+        this.actionType = 'deposit';
+
+        // deposit into capital balance
+        this.captialBalance += this.status.recurringCapital;
+
+        // update trading algorthim base on current factors
+        this.updateTradeAlgorithm(this);
+
+        // return results, I don't think I need this
+        // return this.displayAccount(this);
+      }
+
+    },
+
+    initialize(init, test = false) {
+
+      this.price = init.price;
+      this.btcPrice = init.btcPrice;
+      this.capitalBalance = init.capitalBalance;
+      this.recurringCapital = init.recurringCapital || 0;
+      this.status.market = init.market || 'BTC-USD';
+      this.status.maxDays = init.maxDays;
+
+      return this.tradeOrder('buy', test);
     },
 
     tradeOrder(order, test) {
 
-      let { quote, base, fee, total, insulficiant } = this[order](this);
-
-      if(insulficiant) console.log('testing') // or update something that indicates insulficiant funds
+      let { quote, base, fee, total, insufficient } = this[order](this);
 
       // update ledger
       this.updateLedger({ 
         order,
-        pair: 'DOGE-BTC', 
+        pair: this.status.market, 
         price: this.price,
         quote, 
         base,
         fee,
         total
-      }, insulficiant)
+      }, insufficient)
 
       // update status
-      this.updateStatus(order, this.price, quote, base, fee, total, insulficiant);
+      this.updateStatus(order, this.price, quote, base, fee, total, insufficient);
 
       // update balance
-      this.updateBalance(order, base, total, insulficiant);
+      this.updateBalance(order, base, total, insufficient);
 
       // update valuation
-      this.updateValuation(this, insulficiant);
+      this.updateValuation(this, insufficient);
 
       // for testing and debugging
-      this.testingLogs(test, insulficiant);
+      this.testingLogs(test, insufficient);
+
+      return insufficient ? false : true;
 
     },
 
-    updateLedger(ledger, insulficiant) {
-      if(!insulficiant) this.ledger.push(ledger);
+    updateLedger(ledger, insufficient) {
+      if(!insufficient) this.ledger = [ledger] //this.ledger.push(ledger);
     },
 
-    updateStatus(order, price, quote, base, fee, total, insulficiant) {
+    updateStatus(order, price, quote, base, fee, total, insufficient) {
 
-      // thinking of changing insulficiant to isTradeExecuted or something similar
-      if(insulficiant) {
+      // thinking of changing insufficient to isTradeExecuted or something similar
+      if(insufficient) {
 
-        this.status.insulficiantCount++;
+        this.status.insufficientCount++;
         this.status.orderStatus = `unfilled ${order} order`;
+        this.actionType = 'trade';
 
       } else {
 
         this.status.tradeCount++;
         this.status[order + 'Total']++
         this.status.orderStatus = order;
+        this.actionType = 'trade';
 
         if(order === 'buy') {
 
@@ -303,8 +403,8 @@ const cryptoContainer = () => {
 
     },
 
-    updateBalance(order, base, total, insulficiant) {
-      if(insulficiant) return;
+    updateBalance(order, base, total, insufficient) {
+      if(insufficient) return;
 
       if(order === 'buy') {
         
@@ -324,8 +424,8 @@ const cryptoContainer = () => {
 
     },
 
-    updateValuation({price, baseBalance, quoteBalance, totalInvested}, insulficiant) {
-      if(insulficiant) return;
+    updateValuation({price, baseBalance, quoteBalance, totalInvested}, insufficient) {
+      if(insufficient) return;
 
       let baseValue, totalValue;
 
@@ -346,6 +446,11 @@ const cryptoContainer = () => {
 
     },
 
+    updateTradeAlgorithm() {
+
+      console.log('update to the trading algorthim will be placed here')
+    },
+
     priceAction(action, test) {
 
       if(action === 'INCREMENT') this.price++;
@@ -357,7 +462,7 @@ const cryptoContainer = () => {
       this.updateValuation(this);
 
       // for testing and debugging
-      this.testingLogs(test);
+      // this.testingLogs(test);
 
     },
 
@@ -365,28 +470,169 @@ const cryptoContainer = () => {
       if(test) console.log(this.displayAccount(this));
     },
 
-  }
+  };
 
-  return action => {
+  return (action, init) => {
     
-    let {pricAction} = crypto;
     switch (action) {
-       case 'INCREMENT':
+
+      case 'INCREMENT':
         crypto.priceAction('INCREMENT', true);
         break;
+
       case 'DECREMENT':
         crypto.priceAction('DECREMENT', true);
         break;
+
+      case 'UP-TO-DATE':
+        crypto.antedate();
+        break;
+
+      case 'INIT':
+        crypto.initialize(init, true);
+        break;
+
+      case 'MAX':
+        return crypto.status.maxDays;
+
+      case 'RETRIVE':
+        return crypto.retrive();
+
+      case 'DATE':
+        return crypto.status.dayCount;
+
       case 'BUY':
-        crypto.tradeOrder('buy', true);
-        break;
+        return crypto.tradeOrder('buy', true);
+
       case 'SELL':
-        crypto.tradeOrder('sell', true);
-        break;
+        return crypto.tradeOrder('sell', true);
+
       default:
         return;
     }
 
-  }
+  };
 
 }
+
+const handleExchange = () => { // handle exchange
+
+  
+  let termSequence = 7; // weekly
+  let ledger = [];
+  let updated = false;
+  let dailyTradeRate = 3;
+  let tradesPerAction = 10;
+  let action = 'DECREMENT';
+  let maxDays = trade('MAX');
+
+  let randomize = false;
+
+  const randomTradeAction = () => {
+    const num = [
+      Math.ceil(Math.random() * 3), 
+      Math.ceil(Math.random() * 5), 
+      Math.ceil(Math.random() * 7), 
+      Math.ceil(Math.random() * 10)
+    ];
+
+    return num[Math.floor(Math.random() * 4)];
+  }
+
+  const randomDailyTradeRate = () => {
+    const num = [1,1,2,
+      Math.ceil(Math.random() * 2), 
+      Math.ceil(Math.random() * 3), 
+      Math.ceil(Math.random() * 4),
+      Math.ceil(Math.random() * 8),
+    ];
+
+    return num[Math.floor(Math.random() * 7)] + Math.ceil(Math.random() * 2);
+  }
+
+  const executeOrder = action => {
+    
+    trade(action);
+
+    return action === 'DECREMENT' ? trade('BUY') : trade('SELL');
+  }
+
+  const executeTrade = (action) => { // trade sequence
+
+  let tradeCount = 0;
+
+    do {
+
+      if( executeOrder(action) ) {
+        
+        // current date
+        let date = trade('DATE');
+
+        // increase tradeCount
+        tradeCount++;
+
+          // change Price Action
+        if(tradeCount % tradesPerAction === 0) {
+
+          // switch action
+          action = action === 'INCREMENT' ? 'DECREMENT' : 'INCREMENT';
+
+          // randomize trades per action or default @ 10
+          tradesPerAction = randomize ? randomTradeAction() : 10;
+
+        }
+
+        if( tradeCount % dailyTradeRate === 0 ) {
+
+          // update dayCount and check to deposit new amount
+          trade('UP-TO-DATE');
+
+          // current date
+          date = trade('DATE');
+
+          // reset dailyTradeRate with random num or default @ 3
+          dailyTradeRate = randomize ? randomDailyTradeRate() : 3;
+        }
+
+        if(date % termSequence === 0 && !updated) {
+
+          // set to true when updated ledger
+          updated = true;
+
+          // push current trade information to ledger
+          ledger.push(trade('RETRIVE'));
+
+        }
+        
+        if(date % termSequence !== 0 && updated){
+
+          // sets to false when date changes
+          updated = false;
+        }
+
+      }
+      
+    } while ( trade('DATE') <= maxDays );
+    
+  }
+
+  executeTrade(action);
+
+}
+
+const trade = cryptoCache();
+
+const ledger = [];
+trade('INIT', { 
+  price: 30, 
+  btcPrice: 4200, 
+  capitalBalance: 100000000, 
+  recurringCapital: 100000000, 
+  market: 'DOGE-BTC', 
+  maxDays: 140, 
+});
+
+ledger.push(trade('RETRIVE'));
+
+
+handleExchange();
