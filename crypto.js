@@ -14,6 +14,7 @@ const cryptoCache = () => { // crypto asset markets
     baseBalance: 0,
     quoteBalance: 0,
     baseValuation: 0,
+    totalTradeAmount: 0, // update balance
     totalValue: 0, // account valuation of trading pair, not using atm
 
     totalInvested: 0,
@@ -125,8 +126,73 @@ const cryptoCache = () => { // crypto asset markets
       return this.displayAccount(this);
     },
 
+    buyFactorReducerAlgo( term, totalTradeAmount) {
+
+      let factor, quote, totalQuote, totalTrades, dailyTrades, high, low;
+    
+      low = high = factor = 2;
+    
+      return testFactor(term);
+    
+      function applyFactor(term) {
+    
+        quote = factor * minimumQuote;
+    
+        totalQuote = Math.round( quote + (quote * feeRate) );
+    
+        totalTrades = Math.floor(totalTradeAmount / totalQuote);
+    
+        dailyTrades = Math.floor(totalTrades / term);
+      }
+    
+      function unit() {
+    
+        let unit = Math.round( ( (high - low) / 2 ) * 100 );
+    
+        return unit % 2 === 1 ? (unit + 1) / 100 : unit / 100;
+      }
+    
+      function testFactor(term) {
+    
+        applyFactor(term);
+    
+        if ( dailyTrades > 10 && factor >= 10 ) {
+          // increase factor by 5
+          factor += 5;
+    
+        } else if ( dailyTrades > 10 && factor >= 2 && factor < 10 ) {
+          // increase factor until dailyTrades = 10
+    
+          if (high === 2) {
+    
+            high = factor = 10;
+    
+          } else {
+    
+            low = factor;
+    
+            factor = Math.round(( factor + unit() ) * 100) / 100;
+          }
+    
+        } else if ( dailyTrades < 10 && factor > 2 && factor <= 10 ) {
+          // decrease factor until dailyTrades = 10
+    
+          high = factor;
+    
+          factor = Math.round(( factor - unit() ) * 100) / 100;
+    
+        } else return { factor, dailyTrades, totalTrades, quote, totalQuote };
+    
+        return testFactor(term);
+      }
+    
+    },
+
     buy({price, minimumQuote, factor, feeRate, baseBalance, capitalBalance, quoteBalance}) {
       let quote, base, fee, total, baseValue, insufficient = false;
+
+      //algorithm to calculate factor
+      factor =  buyFactorReducerAlgo( 30 - dayCount % 30, this.totalTradeAmount );
 
       // calculate quote
       quote = Math.round(minimumQuote * factor);
@@ -140,7 +206,7 @@ const cryptoCache = () => { // crypto asset markets
       // fee applied to quote
       total = Math.round(quote + fee);
 
-      // baseBalance in quote value with fee applied
+      // baseBalance in quote value with fee applied, why is this in here? should this be in updateValuation? I think I will remove from here
       baseValue = ( Math.round(baseBalance * price / Math.pow(10,8)) - Math.round(baseBalance * price * feeRate / Math.pow(10,8)) );
 
       // check capitalBalance first then quoteBalance for suficiant funds
@@ -150,7 +216,7 @@ const cryptoCache = () => { // crypto asset markets
       // for testing
       // console.log(quote, base, fee , total, insufficient, price - this.status.lastBuyPrice, this.status.last_buy);
 
-      return { quote, base, fee, total, insufficient };
+      return { quote, base, fee, total, baseValue, insufficient };
     },
 
     sell({price, minimumQuote, factor, baseBalance, feeRate}) {
@@ -217,8 +283,11 @@ const cryptoCache = () => { // crypto asset markets
         // deposit into capital balance
         this.captialBalance += this.status.recurringCapital;
 
+        // update totalTradeAmount
+        this.totalTradeAmount = this.capitalBalance + this.quoteBalance;
+
         // update trading algorthim base on current factors
-        this.updateTradeAlgorithm(this);
+        // this.updateTradeAlgorithm(this);
 
         // return results, I don't think I need this
         // return this.displayAccount(this);
@@ -411,6 +480,7 @@ const cryptoCache = () => { // crypto asset markets
         this.capitalBalance >= total 
         ? this.capitalBalance -= total 
         : this.quoteBalance -= total;
+        this.totalTradeAmount -= total;
         this.baseBalance += base;
 
       };
