@@ -481,3 +481,5 @@ record();
 // if have a database record every price movement and trade
 // for testing purposes record every price movement and trade
 // for working iterations record trades base on cycle of days, 1,3,5,7,10,15,30, 365
+
+console.log('adding a random log')
